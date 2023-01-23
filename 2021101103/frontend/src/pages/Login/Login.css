@@ -1,0 +1,12 @@
+.login-page{
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    margin-top: 50px;
+    height: 800px
+}
+
+.middle-line{
+    height: 500px;
+    border: 1px solid lightgrey ;
+}
