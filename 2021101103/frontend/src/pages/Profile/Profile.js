@@ -8,16 +8,84 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
+import Logout from '../../functionality/Logout';
 
-const Profile = (event) => {
+const Profile = () => {
+    
+    /***Hardcoding followers***/
 
-    event.preventDefault();
+    const followers = ["admin1", "admin2"];
+    const following = ["admin1", "admin3", "admin5"];
+
+    /*** ***/
+    
     useEffect(() => {
         document.title = 'Grediit | Profile';
       }, []);
 
-    const handleEditSubmit = () => {
-        console.log('ok');
+    const [editButtonDisabled, setEditButtonDisabled] = React.useState(true);
+
+    const checkEditFields = () => {
+        const signupUsernameLength = document.getElementById('editUsername').value.length;
+        const signupPasswordLength = document.getElementById('editPassword').value.length;
+        const signupEmailLength = document.getElementById('editEmail').value.length;
+        const signupLastnameLength = document.getElementById('editLastname').value.length;
+        
+        if (signupUsernameLength > 0 && signupPasswordLength > 0 && signupEmailLength > 0
+            && signupLastnameLength > 0){
+            setEditButtonDisabled(false);
+        } else {
+            setEditButtonDisabled(true);
+        }
+    }
+      
+    const handleEditSubmit = (event) => {
+        event.preventDefault();
+        console.log('Command initiated to edit profile');
+
+        const data = new FormData(event.currentTarget);
+        const submittedData = {
+          firstname: data.get('editFirstname'),
+          lastname: data.get('editLastname'),
+          username: data.get('editUsername'),
+          email: user.email,
+          age: data.get('editAge'),
+          contact_number: data.get('editContactNumber'),
+          password: data.get('editPassword'),
+        };
+    
+        const JSONData = JSON.stringify(submittedData);
+    
+        fetch('http://localhost:5000/edit', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          }, 
+          body: JSONData
+        })
+        .then((result) => {
+            console.log(result);
+
+            const returnedStatus = result.status;
+      
+            console.log(returnedStatus);
+      
+            if (returnedStatus === 204){
+              console.log("Credentials Updated");
+      
+                console.log(result);
+                alert('Details updated. Please login again.');
+
+                Logout();
+            }else {
+                console.log("Couldn't edit data");
+                Logout();
+            }
+        })
+        .catch((err) => {
+            console.log(`Couldn't sign up with error ${err}`);
+        })
     }
 
     const theme = createTheme();
@@ -26,7 +94,7 @@ const Profile = (event) => {
     return(
         <div className="profile-page">
             <div className="mutable-details">
-                {/******/}
+                {/*** MUI Template ***/}
                 <ThemeProvider theme={theme}>
                 <Container component="main" maxWidth="xs">
                     <CssBaseline />
@@ -49,7 +117,6 @@ const Profile = (event) => {
 
                         <TextField
                         margin="normal"
-                        // required
                         fullWidth
                         id="editFirstname"
                         label="First Name"
@@ -64,6 +131,8 @@ const Profile = (event) => {
                         id="editLastname"
                         label="Last Name"
                         name="editLastname"
+                        defaultValue={user.lastname}
+                        onKeyUp={checkEditFields}
                         />
 
                         <TextField
@@ -73,6 +142,8 @@ const Profile = (event) => {
                         id="editUsername"
                         label="Username"
                         name="editUsername"
+                        defaultValue={user.username}
+                        onKeyUp={checkEditFields}
                         />
 
                         <TextField
@@ -82,6 +153,9 @@ const Profile = (event) => {
                         id="editEmail"
                         label="Email"
                         name="editEmail"
+                        defaultValue={user.email}
+                        onKeyUp={checkEditFields}
+                        disabled
                         />
 
                         <TextField
@@ -91,6 +165,7 @@ const Profile = (event) => {
                         label="Age"
                         type="number"
                         name="editAge"
+                        defaultValue={user.age}
                         />
 
                         <TextField
@@ -99,6 +174,7 @@ const Profile = (event) => {
                         id="editContactNumber"
                         label="Contact Number"
                         name="editContactNumber"
+                        defaultValue={user.contact_number}
                         />
 
                         <TextField
@@ -109,16 +185,18 @@ const Profile = (event) => {
                         label="Password"
                         type="password"
                         id="editPassword"
+                        onKeyUp={checkEditFields}
                         />
 
                         <Button
                         type="submit"
                         fullWidth
                         variant="fullwidth"
-                        id = "signupButton"
+                        id = "editButton"
+                        disabled={editButtonDisabled}
                         sx={{ mt: 3, mb: 2 }}
                         >
-                        Register
+                        Edit Profile
                         </Button>
                     </Box>
                     </Box>
@@ -131,7 +209,9 @@ const Profile = (event) => {
             </div>
 
             <div className="follow-pane">
-               
+               <div className="follower-pane">hello</div>
+
+               <div className="following-pane">bye</div>
             </div>
         </div>
     );

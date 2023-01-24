@@ -76,6 +76,8 @@ app.post('/login', async (req, res) => {
 
         return_user.token = token;
 
+        console.log(return_user);
+
         res.setHeader('Content-Type', 'application/json');
         res.status(200).send(return_user);
       }
@@ -112,13 +114,13 @@ app.post('/register', async (req, res) => {
     const encryptedPassword = await bcrypt.hash(password, 10);
 
     const return_user = await User.create({
-      firstname: firstname.toLowerCase(),
-      lastname: lastname.toLowerCase(),
-      username,
+      firstname: firstname,
+      lastname: lastname,
       email: email.toLowerCase(),
-      age,
-      contact_number,
-      password: encryptedPassword
+      username: username,
+      age: age,
+      contact_number: contact_number,
+      password: encryptedPassword,
     });
 
     if (!return_user){
@@ -137,6 +139,70 @@ app.post('/register', async (req, res) => {
 
     res.setHeader('Content-Type', 'application/json');
     res.status(201).send(return_user);
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// edit
+app.post('/edit', async (req, res) => {
+  try{
+    const data = {
+      firstname,
+      lastname,
+      username,
+      email,
+      age,
+      contact_number,
+      password
+    } = req.body;
+
+    console.log(data);
+
+    const existingUser = await User.findOne(
+      {email}
+    );
+
+    console.log(existingUser);
+
+    if (!existingUser){
+      return res.status(400).send("Doesn't exist!");
+    }
+    console.log('user found');
+
+    // creating encrypted password
+    const encryptedPassword = await bcrypt.hash(password, 10);
+
+    const return_user = await User.findOneAndUpdate(existingUser,{
+      firstname: firstname,
+      lastname: lastname,
+      username: username,
+      age: age,
+      contact_number: contact_number,
+      password: encryptedPassword
+    }, {
+      new: true
+    });
+
+    if (!return_user){
+      res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    const token = jwt.sign(
+      { user_id: return_user._id, email },
+      tokenKey,
+      {
+       expiresIn: "2h",
+      }
+    );
+
+    return_user.token = token;
+
+    console.log(JSON.stringify(return_user));
+
+    res.setHeader('Content-Type', 'application/json');
+    res.status(204).send(JSON.stringify(return_user));
 
   } catch(err){
     console.log(err);

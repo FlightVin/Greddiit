@@ -12,11 +12,6 @@
     flex-direction: column;  
 }
 
-.follow-pane {
-    width: 100%;
-    flex-grow: 1;
-}
-
 .separating-line{
     margin-top: 10;
     height: 800px;
@@ -26,3 +21,11 @@
     background-color: lightgray;
     border-radius: 10px;
 }
+
+.follow-pane {
+    width: 100%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
