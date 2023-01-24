@@ -29,3 +29,38 @@
     flex-direction: column;
 }
 
+.follower-pane {
+    flex-grow: 1;
+    margin: auto;
+    height: 100%;
+}
+
+.following-pane {
+    flex-grow: 1;
+    margin: auto;
+    height: 100%;
+}
+
+#follower-heading{
+    color: darkorange;
+}
+
+#following-heading{
+    color: darkorange;
+}
+
+#follower-heading:hover{
+    color: orangered;
+    cursor: pointer;
+}
+
+#following-heading:hover{
+    color: orangered;
+    cursor: pointer;
+}
+
+.display-text {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+}

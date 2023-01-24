@@ -114,12 +114,12 @@ app.post('/register', async (req, res) => {
     const encryptedPassword = await bcrypt.hash(password, 10);
 
     const return_user = await User.create({
-      firstname: firstname,
-      lastname: lastname,
+      firstname,
+      lastname,
       email: email.toLowerCase(),
-      username: username,
-      age: age,
-      contact_number: contact_number,
+      username,
+      age,
+      contact_number,
       password: encryptedPassword,
     });
 
@@ -174,12 +174,12 @@ app.post('/edit', async (req, res) => {
     // creating encrypted password
     const encryptedPassword = await bcrypt.hash(password, 10);
 
-    const return_user = await User.findOneAndUpdate(existingUser,{
-      firstname: firstname,
-      lastname: lastname,
-      username: username,
-      age: age,
-      contact_number: contact_number,
+    const return_user = await User.findOneAndUpdate({email},{
+      firstname,
+      lastname,
+      username,
+      age,
+      contact_number,
       password: encryptedPassword
     }, {
       new: true

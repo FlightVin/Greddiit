@@ -14,8 +14,8 @@ const Profile = () => {
     
     /***Hardcoding followers***/
 
-    const followers = ["admin1", "admin2"];
-    const following = ["admin1", "admin3", "admin5"];
+    const followersArray = ["admin1", "admin2"];
+    const followingArray = ["admin1", "admin3", "admin5"];
 
     /*** ***/
     
@@ -86,6 +86,50 @@ const Profile = () => {
         .catch((err) => {
             console.log(`Couldn't sign up with error ${err}`);
         })
+    }
+
+    const [areFollowersDisplayed, setAreFollowersDisplayed] = React.useState(false);
+    const displayFollowers = () => {
+        setAreFollowersDisplayed(!areFollowersDisplayed);
+    }
+    const renderFollowers = () => {
+        if (areFollowersDisplayed){
+            if (followersArray.length > 0){
+                var returnVal = [];
+
+                followersArray.forEach(follower => {
+                    returnVal.push(<div><p className='display-text'>{follower}</p></div>)
+                })
+
+                return returnVal;
+            } else {
+                return 'No Followers!';
+            }
+        } else {
+            return '';
+        }
+    }
+
+    const [areFollowingDisplayed, setAreFollowingDisplayed] = React.useState(false);
+    const displayFollowing = () => {
+        setAreFollowingDisplayed(!areFollowingDisplayed);
+    }
+    const renderFollowing = () => {
+        if (areFollowingDisplayed){
+            if (followingArray.length > 0){
+                var returnVal = [];
+
+                followingArray.forEach(follower => {
+                    returnVal.push(<div><p className='display-text'>{follower}</p></div>)
+                })
+
+                return returnVal;
+            } else {
+                return 'No Followers!';
+            }
+        } else {
+            return '';
+        }
     }
 
     const theme = createTheme();
@@ -209,9 +253,19 @@ const Profile = () => {
             </div>
 
             <div className="follow-pane">
-               <div className="follower-pane">hello</div>
+                <div className="follower-pane">
+                    <h2 id="follower-heading" onClick={displayFollowers}>Followers: {followersArray.length}</h2>
+                    <div id="followers-display">
+                        {renderFollowers()}
+                    </div>
+                </div>
 
-               <div className="following-pane">bye</div>
+                <div className="following-pane">
+                    <h2 id="following-heading" onClick={displayFollowing}>Following: {followingArray.length}</h2>
+                    <div id="following-display">
+                        {renderFollowing()}
+                    </div>
+                </div>
             </div>
         </div>
     );
