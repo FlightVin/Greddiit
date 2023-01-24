@@ -9,48 +9,144 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
-
 import './Login.css'
+import { useNavigate } from 'react-router-dom';
 
 const theme = createTheme();
 
 export default function Login() {
+  React.useEffect(() => {
+    document.title = 'Grediit | Login';
+  }, []);
+
+  const authSuccessColor = 'white';
+  const afterLogin = '/profile';
+
+  const navigate = useNavigate();
+
   // for login button
   const handleLoginSubmit = (event) => {
+
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const submittedData = {
-      username: data.get('loginUsername'),
+      email: data.get('loginEmail'),
       password: data.get('loginPassword'),
     };
+    const JSONData = JSON.stringify(submittedData);
 
-    console.log(submittedData);
+    console.log(JSONData);
+
+    fetch('http://localhost:5000/login', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      }, 
+      body: JSONData
+    })
+    .then((result) => {
+      console.log(result);
+      const returned_status = result.status;
+      console.log(returned_status);
+
+      if (returned_status === 200){
+        console.log("Credentials Accepted");
+        setLoginFaliure(authSuccessColor);
+
+        result.json()
+          .then((body) => {
+            console.log(body);
+            
+            localStorage.setItem('grediit-user-details', JSON.stringify(body));
+            localStorage.setItem('grediit-user-token', body.token);
+
+            navigate(afterLogin);
+          })
+          .catch((err) => {
+            console.log(`Acquired error in reading result data: ${err}`);
+          })
+
+      } else {
+        console.log("Invalid Credentials");
+        setLoginFaliure('crimson');
+      }
+      
+    })
+    .catch((err) => {
+      console.log(`Couldn't send data with error ${err}`);
+    });
   };
 
   const [loginButtonDisabled, setLoginButtonDisabled] = React.useState(true);
 
+  const [loginFaliure, setLoginFaliure] = React.useState(authSuccessColor);
+
   const checkLoginFields = () => {
-    const loginUsernameLength = document.getElementById('loginUsername').value.length;
+    const loginEmailLength = document.getElementById('loginEmail').value.length;
     const loginPasswordLength = document.getElementById('loginPassword').value.length;
 
-    if (loginUsernameLength > 0 && loginPasswordLength > 0){
+    if (loginEmailLength > 0 && loginPasswordLength > 0){
         setLoginButtonDisabled(false);
     } else {
         setLoginButtonDisabled(true);
     }
   }
 
+  const [emailInUse, setEmailInUse] = React.useState(false);
+
   // for signup button
   const handleSignupSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const submittedData = {
-      email: data.get('signupEmail'),
+      firstname: data.get('signupFirstname'),
+      lastname: data.get('signupLastname'),
       username: data.get('signupUsername'),
+      email: data.get('signupEmail'),
+      age: data.get('signupAge'),
+      contact_number: data.get('signupContactNumber'),
       password: data.get('signupPassword'),
     };
 
-    console.log(submittedData);
+    const JSONData = JSON.stringify(submittedData);
+
+    fetch('http://localhost:5000/register', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      }, 
+      body: JSONData
+    })
+    .then((result) => {
+      const returnedStatus = result.status;
+      
+      console.log(returnedStatus);
+
+      if (returnedStatus === 201){
+        console.log("Credentials Created");
+        setEmailInUse(false);
+
+        result.json()
+          .then((body) => {
+            console.log(body);
+            
+            localStorage.setItem('grediit-user-details', JSON.stringify(body));
+            localStorage.setItem('grediit-user-token', body.token);
+
+            navigate(afterLogin);
+          })
+          .catch((err) => {
+            console.log(`Acquired error in reading result data: ${err}`);
+          })
+      } else if (returnedStatus === 409){
+        setEmailInUse(true);
+      }
+    })
+    .catch((err) => {
+      console.log(`Couldn't sign up with error ${err}`);
+    })
   };
   const [signupButtonDisabled, setSignupButtonDisabled] = React.useState(true);
 
@@ -58,8 +154,11 @@ export default function Login() {
     const signupUsernameLength = document.getElementById('signupUsername').value.length;
     const signupPasswordLength = document.getElementById('signupPassword').value.length;
     const signupEmailLength = document.getElementById('signupEmail').value.length;
+    const signupLastnameLength = document.getElementById('signupLastname').value.length;
 
-    if (signupUsernameLength > 0 && signupPasswordLength > 0 && signupEmailLength > 0){
+
+    if (signupUsernameLength > 0 && signupPasswordLength > 0 && signupEmailLength > 0
+        && signupLastnameLength > 0){
         setSignupButtonDisabled(false);
     } else {
         setSignupButtonDisabled(true);
@@ -69,7 +168,7 @@ export default function Login() {
   return (
     <div className="login-page">
 
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={theme} >
       <Container component="main" maxWidth="xs">
         <CssBaseline />
 
@@ -95,9 +194,9 @@ export default function Login() {
               margin="normal"
               required
               fullWidth
-              id="loginUsername"
-              label="Username"
-              name="loginUsername"
+              id="loginEmail"
+              label="Email"
+              name="loginEmail"
               onKeyUp={checkLoginFields}
             />
 
@@ -122,8 +221,12 @@ export default function Login() {
             >
               Sign In
             </Button>
-
           </Box>
+
+          <Typography variant='h7' color={loginFaliure}>
+              Incorrect Credentials
+          </Typography>
+
         </Box>
       </Container>
     </ThemeProvider>
@@ -155,11 +258,20 @@ export default function Login() {
 
             <TextField
               margin="normal"
+              // required
+              fullWidth
+              id="signupFirstname"
+              label="First Name"
+              name="signupFirstname"
+            />
+
+            <TextField
+              margin="normal"
               required
               fullWidth
-              id="signupEmail"
-              label="Email"
-              name="signupEmail"
+              id="signupLastname"
+              label="Last Name"
+              name="signupLastname"
               onKeyUp={checkSignupFields}
             />
 
@@ -171,6 +283,34 @@ export default function Login() {
               label="Username"
               name="signupUsername"
               onKeyUp={checkSignupFields}
+            />
+
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="signupEmail"
+              label="Email"
+              name="signupEmail"
+              onKeyUp={checkSignupFields}
+              helperText={emailInUse ? "Email already in use!": ""}
+            />
+
+            <TextField
+              margin="normal"
+              fullWidth
+              id="signupAge"
+              label="Age"
+              type="number"
+              name="signupAge"
+            />
+
+            <TextField
+              margin="normal"
+              fullWidth
+              id="signupContactNumber"
+              label="Contact Number"
+              name="signupContactNumber"
             />
 
             <TextField
@@ -194,7 +334,6 @@ export default function Login() {
             >
               Register
             </Button>
-
           </Box>
         </Box>
       </Container>

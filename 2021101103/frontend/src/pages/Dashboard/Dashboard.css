@@ -1,0 +1,28 @@
+.dashIconClass:hover {
+    cursor: pointer;
+    border-radius: 10px;
+    width: 60px;
+    background-color: teal;
+}
+
+#dashProfileIcon:hover {
+    background-color: teal;
+}
+
+#dashMypagesIcon:hover {
+    background-color: teal;
+}
+
+#dashAllpagesIcon:hover {
+    background-color: teal;
+}
+
+#dashSavedpostsIcon:hover {
+
+}
+
+#dashLogoutIcon:hover {
+    cursor: pointer;
+    border-radius: 10px;
+    background-color: crimson;
+}

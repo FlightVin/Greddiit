@@ -1,0 +1,28 @@
+.profile-page {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    margin-top: 50px;
+}
+
+.mutable-details {
+    width: 70%;
+    flex-grow: 0.7;  
+    display: flex;
+    flex-direction: column;  
+}
+
+.follow-pane {
+    width: 100%;
+    flex-grow: 1;
+}
+
+.separating-line{
+    margin-top: 10;
+    height: 800px;
+    margin-left: 20px;
+    margin-right: 20px;
+    width: 5px;
+    background-color: lightgray;
+    border-radius: 10px;
+}
