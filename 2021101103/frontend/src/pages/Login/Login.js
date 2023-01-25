@@ -16,7 +16,7 @@ const theme = createTheme();
 
 export default function Login() {
   React.useEffect(() => {
-    document.title = 'Grediit | Login';
+    document.title = 'Greddiit | Login';
   }, []);
 
   const authSuccessColor = 'white';
@@ -165,7 +165,10 @@ export default function Login() {
     }
   }
 
+  /********* Frontend **********/
+
   return (
+    <div className="inner-pane">
     <div className="login-page">
 
     <ThemeProvider theme={theme} >
@@ -178,7 +181,6 @@ export default function Login() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            backgroundColor: 'white',
           }}
         >
           <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
@@ -340,6 +342,7 @@ export default function Login() {
       </Container>
     </ThemeProvider>
 
+    </div>
     </div>
   );
 }

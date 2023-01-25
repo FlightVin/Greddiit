@@ -7,14 +7,13 @@ export default function NotFound404() {
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
         minHeight: '100vh',
-        backgroundColor: '#ff4500',
+        backgroundImage: 'url(https://i.redd.it/c3uhsgo1vx541.jpg)'
       }}
     >
-      <Typography variant="h1" style={{ color: 'white' }}>
+      <Typography variant="h1" style={{ color: 'white', marginTop: '200px' }}>
         404
       </Typography>
       <Typography variant="h6" style={{ color: 'white' }}>

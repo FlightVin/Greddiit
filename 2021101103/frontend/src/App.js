@@ -12,9 +12,10 @@ function App() {
 
     <Routes>
       <Route path='/' element={
-        <Protected>
-          <Dashboard />
-        </Protected>
+        <LoginBypass>
+        <Dashboard />
+        <Login />
+      </LoginBypass>
       } />
 
       <Route path="/login" element={ 

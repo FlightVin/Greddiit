@@ -2,10 +2,11 @@
     display: flex;
     align-items: center;
     flex-direction: row;
-    margin-top: 50px;
-    /* background-image: linear-gradient(to bottom right, #f00060, #ff4500); */
-    height: 100%;
-    margin-top: 0;
+
+    width: 900px;
+    height: auto;
+    background-color: whitesmoke;
+    opacity: 0.85;
 }
 
 .middle-line{
@@ -19,4 +20,12 @@
     text-align: center;
     font-weight: 100;
     font-style: italic;
+}
+
+.inner-pane{
+    background-image: url('https://i.redd.it/c3uhsgo1vx541.jpg');   
+    height: 1100px;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
 }

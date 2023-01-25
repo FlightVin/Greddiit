@@ -9,18 +9,57 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Logout from '../../functionality/Logout';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const Profile = () => {
     
     /***Hardcoding followers***/
 
-    const followersArray = ["admin1", "admin2"];
-    const followingArray = ["admin1", "admin3", "admin5"];
+    const followersArray = [
+        {
+            username: 'hakuna1',
+            email: 'matata1'
+        },
+        {
+            username: 'hakuna2',
+            email: 'matata2'
+        },
+        {
+            username: 'hakuna3',
+            email: 'matata3'
+        },
+        {
+            username: 'hakuna4',
+            email: 'matata4'
+        },
+        {
+            username: 'hakuna4',
+            email: 'matata5'
+        }
+    ]
+    const followingArray = [
+        {
+            username: 'hakuna10',
+            email: 'matata10'
+        },
+        {
+            username: 'hakuna-2',
+            email: 'matata-2'
+        },
+        {
+            username: 'hakuna4',
+            email: 'matata4'
+        },
+        {
+            username: 'hakuna4',
+            email: 'matata5'
+        }
+    ];
 
     /*** ***/
     
     useEffect(() => {
-        document.title = 'Grediit | Profile';
+        document.title = 'Greddiit | Profile';
       }, []);
 
     const [editButtonDisabled, setEditButtonDisabled] = React.useState(true);
@@ -98,7 +137,28 @@ const Profile = () => {
                 var returnVal = [];
 
                 followersArray.forEach(follower => {
-                    returnVal.push(<div><p className='display-text'>{follower}</p></div>)
+                    let currentDeleteIconID = `deleteFollower${follower.email}`;
+
+                    returnVal.push(
+                        <div className='display-div'>
+                            <span>
+                                <DeleteIcon className='deleteIcon' id={currentDeleteIconID} sx={{fontSize: 25}}/>
+                            </span>
+
+                            <div className='display-text'>
+                                
+
+                                <span style={{verticalAlign: 'middle', fontWeight: 700, marginLeft: 10, backgroundColor: 'rgb(242, 194, 132)'}}>
+                                {follower.username}:
+                                </span> 
+                                    
+                                <span style={{fontStyle: 'italic', marginLeft: 10}}>
+                                    {follower.email}
+                                </span>
+
+                            </div>
+                        </div>
+                    );
                 })
 
                 return returnVal;
@@ -120,7 +180,28 @@ const Profile = () => {
                 var returnVal = [];
 
                 followingArray.forEach(follower => {
-                    returnVal.push(<div><p className='display-text'>{follower}</p></div>)
+                    let currentDeleteIconID = `deleteFollowin${follower.email}`;
+
+                    returnVal.push(
+                        <div className='display-div'>
+                            <span>
+                                <DeleteIcon className='deleteIcon' id={currentDeleteIconID} sx={{fontSize: 25}}/>
+                            </span>
+
+                            <div className='display-text'>
+                                
+
+                                <span style={{verticalAlign: 'middle', fontWeight: 700, marginLeft: 10, backgroundColor: 'rgb(242, 194, 132)'}}>
+                                {follower.username}:
+                                </span> 
+                                    
+                                <span style={{fontStyle: 'italic', marginLeft: 10}}>
+                                    {follower.email}
+                                </span>
+
+                            </div>
+                        </div>
+                    );
                 })
 
                 return returnVal;
@@ -136,7 +217,9 @@ const Profile = () => {
     const user = JSON.parse(localStorage.getItem('grediit-user-details'));
 
     return(
+        <div className="enclosure">
         <div className="profile-page">
+            <div className="mutable-details-enclosure">
             <div className="mutable-details">
                 {/*** MUI Template ***/}
                 <ThemeProvider theme={theme}>
@@ -248,6 +331,7 @@ const Profile = () => {
                 </ThemeProvider>
                 {/******/}
             </div>
+            </div>
 
             <div className="separating-line">
             </div>
@@ -255,18 +339,19 @@ const Profile = () => {
             <div className="follow-pane">
                 <div className="follower-pane">
                     <h2 id="follower-heading" onClick={displayFollowers}>Followers: {followersArray.length}</h2>
-                    <div id="followers-display">
+                    <div className='profile-display'>
                         {renderFollowers()}
                     </div>
                 </div>
 
                 <div className="following-pane">
                     <h2 id="following-heading" onClick={displayFollowing}>Following: {followingArray.length}</h2>
-                    <div id="following-display">
+                    <div className='profile-display'>
                         {renderFollowing()}
                     </div>
                 </div>
             </div>
+        </div>
         </div>
     );
 }
