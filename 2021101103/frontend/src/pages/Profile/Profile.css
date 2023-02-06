@@ -3,6 +3,7 @@
     height: 90vh;
     align-items: center;
     justify-content: center;
+    margin-top: 30px;
 }
 
 .profile-page {
@@ -111,3 +112,5 @@
     background-color: crimson;
     border-radius: 5px;
 }
+
+

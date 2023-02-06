@@ -30,7 +30,7 @@ export default function Login() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const submittedData = {
-      email: data.get('loginEmail'),
+      email: data.get('loginEmail').toLowerCase(),
       password: data.get('loginPassword'),
     };
     const JSONData = JSON.stringify(submittedData);
@@ -103,7 +103,7 @@ export default function Login() {
       firstname: data.get('signupFirstname'),
       lastname: data.get('signupLastname'),
       username: data.get('signupUsername'),
-      email: data.get('signupEmail'),
+      email: data.get('signupEmail').toLowerCase(),
       age: data.get('signupAge'),
       contact_number: data.get('signupContactNumber'),
       password: data.get('signupPassword'),

@@ -13,47 +13,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 const Profile = () => {
     
-    /***Hardcoding followers***/
+    /***Getting back followers and following***/
 
     const followersArray = [
-        {
-            username: 'hakuna1',
-            email: 'matata1'
-        },
-        {
-            username: 'hakuna2',
-            email: 'matata2'
-        },
-        {
-            username: 'hakuna3',
-            email: 'matata3'
-        },
-        {
-            username: 'hakuna4',
-            email: 'matata4'
-        },
-        {
-            username: 'hakuna4',
-            email: 'matata5'
-        }
+        
     ]
     const followingArray = [
-        {
-            username: 'hakuna10',
-            email: 'matata10'
-        },
-        {
-            username: 'hakuna-2',
-            email: 'matata-2'
-        },
-        {
-            username: 'hakuna4',
-            email: 'matata4'
-        },
-        {
-            username: 'hakuna4',
-            email: 'matata5'
-        }
+        
     ];
 
     /*** ***/
@@ -62,6 +28,10 @@ const Profile = () => {
         document.title = 'Greddiit | Profile';
       }, []);
 
+    const theme = createTheme();
+    const user = JSON.parse(localStorage.getItem('grediit-user-details'));
+
+    // edit profile functionality
     const [editButtonDisabled, setEditButtonDisabled] = React.useState(true);
 
     const checkEditFields = () => {
@@ -127,6 +97,7 @@ const Profile = () => {
         })
     }
 
+    // followers display efunctionality
     const [areFollowersDisplayed, setAreFollowersDisplayed] = React.useState(false);
     const displayFollowers = () => {
         setAreFollowersDisplayed(!areFollowersDisplayed);
@@ -170,6 +141,7 @@ const Profile = () => {
         }
     }
 
+    // following display functionality
     const [areFollowingDisplayed, setAreFollowingDisplayed] = React.useState(false);
     const displayFollowing = () => {
         setAreFollowingDisplayed(!areFollowingDisplayed);
@@ -213,8 +185,33 @@ const Profile = () => {
         }
     }
 
-    const theme = createTheme();
-    const user = JSON.parse(localStorage.getItem('grediit-user-details'));
+    // adding following
+    const [followingButtonDisabled, SetFollowingButtonDisabled] = React.useState(true);
+    const [validFollowingEmail, setValidFollowingEmail] = React.useState(true);
+
+    const checkFollowingEmail = () => {
+        const followingEmailLength = document.getElementById('followingEmail').value.length;
+        
+        if (followingEmailLength > 0){
+            SetFollowingButtonDisabled(false);
+        } else {
+            SetFollowingButtonDisabled(true);
+        }
+    }
+      
+    const handleFollowingAddition = (event) => {
+        event.preventDefault();
+        console.log('Command initiated to add following');
+
+        const data = new FormData(event.currentTarget);
+        const submittedData = {
+          email: data.get('followingEmail').toLowerCase(),
+        };
+        console.log(submittedData);
+    
+        const JSONData = JSON.stringify(submittedData);
+    }
+    
 
     return(
         <div className="enclosure">
@@ -337,6 +334,58 @@ const Profile = () => {
             </div>
 
             <div className="follow-pane">
+                <div className="add-following">
+
+                    {/*** MUI Template ***/}
+                    <ThemeProvider theme={theme}>
+                    <Container component="main" maxWidth="xs">
+                        <CssBaseline />
+
+                        <Box
+                        sx={{
+                            marginTop: 8,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                        }}
+                        >
+
+
+                        <Typography component="h1" variant="h5">
+                            Add Follower
+                        </Typography>
+
+                        <Box component="form" onSubmit={handleFollowingAddition} noValidate sx={{ mt: 1 }}>
+
+                            <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="followingEmail"
+                            label="User Email"
+                            name="followingEmail"
+                            onKeyUp={checkFollowingEmail}
+                            helperText={validFollowingEmail ? "": "Invalid email address"}
+                            />
+
+                            <Button
+                            type="submit"
+                            fullWidth
+                            variant="fullwidth"
+                            id = "addFollowingButton"
+                            disabled={followingButtonDisabled}
+                            sx={{ mt: 3, mb: 2 }}
+                            >
+                                Follow USer
+                            </Button>
+                        </Box>
+                        </Box>
+                    </Container>
+                    </ThemeProvider>
+                    {/******/}                    
+
+                </div>
+
                 <div className="follower-pane">
                     <h2 id="follower-heading" onClick={displayFollowers}>Followers: {followersArray.length}</h2>
                     <div className='profile-display'>
