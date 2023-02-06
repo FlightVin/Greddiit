@@ -11,16 +11,54 @@ import Box from '@mui/material/Box';
 import Logout from '../../functionality/Logout';
 import DeleteIcon from '@mui/icons-material/Delete';
 
+let followersArray = [
+];
+let followingArray = [
+];
+
 const Profile = () => {
-    
+
+    const user = JSON.parse(localStorage.getItem('grediit-user-details'));
+
     /***Getting back followers and following***/
 
-    const followersArray = [
-        
-    ]
-    const followingArray = [
-        
-    ];
+    fetch(`http://localhost:5000/access-followers/${user.email}`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json'
+        }, 
+        body: null
+    })
+    .then((result) => {
+        const returnedStatus = result.status;
+  
+        // console.log(`console log for follows retrieval: ${returnedStatus}`);
+
+        if (returnedStatus == 200){
+
+            result.json()
+                .then((body) => {
+                    followingArray = [];
+                    body.following.forEach(entry => {
+                        followingArray.push({email: entry.followingEmail});
+                    });  
+                    
+                    followersArray = [];
+                    body.followers.forEach(entry => {
+                        followersArray.push({email: entry.followerEmail});
+                    });   
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+
+        } else {
+            console.log("Initial fetch failed");
+            followersArray = [];
+            followingArray = [];
+        }
+    })
 
     /*** ***/
     
@@ -29,7 +67,29 @@ const Profile = () => {
       }, []);
 
     const theme = createTheme();
-    const user = JSON.parse(localStorage.getItem('grediit-user-details'));
+
+    // deleting functionality
+    const deleteFollower = (followerEmail, followingEmail) => {
+        return function(){
+            console.log(followerEmail,followingEmail);
+            fetch(`http://localhost:5000/delete-follower/${followerEmail}/${followingEmail}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                'Content-Type': 'application/json'
+                }, 
+                body: null
+            })
+            .then((result) => {
+                const returnedStatus = result.status;
+            
+                console.log(`Returned status for deletion: ${returnedStatus}`);
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+        };
+    };
 
     // edit profile functionality
     const [editButtonDisabled, setEditButtonDisabled] = React.useState(true);
@@ -113,7 +173,8 @@ const Profile = () => {
                     returnVal.push(
                         <div className='display-div'>
                             <span>
-                                <DeleteIcon className='deleteIcon' id={currentDeleteIconID} sx={{fontSize: 25}}/>
+                                <DeleteIcon className='deleteIcon' id={currentDeleteIconID} sx={{fontSize: 25}}
+                                    onClick={deleteFollower(follower.email, user.email)}/>
                             </span>
 
                             <div className='display-text'>
@@ -148,6 +209,7 @@ const Profile = () => {
     }
     const renderFollowing = () => {
         if (areFollowingDisplayed){
+
             if (followingArray.length > 0){
                 var returnVal = [];
 
@@ -157,7 +219,8 @@ const Profile = () => {
                     returnVal.push(
                         <div className='display-div'>
                             <span>
-                                <DeleteIcon className='deleteIcon' id={currentDeleteIconID} sx={{fontSize: 25}}/>
+                                <DeleteIcon className='deleteIcon' id={currentDeleteIconID} sx={{fontSize: 25}}
+                                    onClick={deleteFollower(user.email, follower.email)}/>
                             </span>
 
                             <div className='display-text'>
@@ -212,7 +275,7 @@ const Profile = () => {
             console.log(returnedStatus);
       
             if (returnedStatus === 201){
-                console.log("Follower Entry Created");
+                console.log("Follower entry Created");
             }else {
                 console.log("Follower entry couldn't be created");
             }

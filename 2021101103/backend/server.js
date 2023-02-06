@@ -275,9 +275,51 @@ app.post('/add-follower-entry', async (req, res) => {
 });
 
 // returning followers
-app.post('/access-followers:id', async (req, res) => {
+app.post('/access-followers/:email', async (req, res) => {
   try{
-       console.log(id);
+    const currentEmail = req.params['email'];
+
+    console.log(currentEmail);
+    
+    const followingData = await Follower.find({
+      followerEmail: currentEmail
+    });
+
+    const followerData = await Follower.find({
+      followingEmail: currentEmail
+    });
+
+    const returned_data = {
+      followers: followerData,
+      following: followingData
+    }
+
+    // console.log(returned_data)
+
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).send(JSON.stringify(returned_data));
+
+  } catch(err){
+    console.log(err);
+    res.status(400).send("Couldn't create follower entry");
+  }
+});
+
+// deleting follower entry
+app.post('/delete-follower/:followerEmail/:followingEmail', async (req, res) => {
+  try{
+    const following_email = req.params['followingEmail'];
+    const follower_email = req.params['followerEmail'];
+
+    console.log(follower_email, following_email);
+
+    const returned_data = await Follower.findOneAndDelete({
+      followerEmail: follower_email,
+      followingEmail: following_email
+    });
+    
+    res.status(200).send(returned_data);
+
   } catch(err){
     console.log(err);
     res.status(400).send("Couldn't create follower entry");
