@@ -11,66 +11,66 @@ import Box from '@mui/material/Box';
 import Logout from '../../functionality/Logout';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-let followersArray = [
-];
-let followingArray = [
-];
-
 const Profile = () => {
 
     const user = JSON.parse(localStorage.getItem('grediit-user-details'));
+    const [followingEmailText, setFollowingEmailText] = React.useState("");
+    const [followersArray, setFollowersArray] = React.useState([]);
+    const [followingArray, setFollowingArray] = React.useState([]);
+    const [changeArray, setChangeArray] = React.useState(true);
+    const [areFollowersDisplayed, setAreFollowersDisplayed] = React.useState(false);
+    const [areFollowingDisplayed, setAreFollowingDisplayed] = React.useState(false);
 
-    /***Getting back followers and following***/
-
-    fetch(`http://localhost:5000/access-followers/${user.email}`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json'
-        }, 
-        body: null
-    })
-    .then((result) => {
-        const returnedStatus = result.status;
-  
-        // console.log(`console log for follows retrieval: ${returnedStatus}`);
-
-        if (returnedStatus == 200){
-
-            result.json()
-                .then((body) => {
-                    followingArray = [];
-                    body.following.forEach(entry => {
-                        followingArray.push({email: entry.followingEmail});
-                    });  
-                    
-                    followersArray = [];
-                    body.followers.forEach(entry => {
-                        followersArray.push({email: entry.followerEmail});
-                    });   
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
-
-        } else {
-            console.log("Initial fetch failed");
-            followersArray = [];
-            followingArray = [];
-        }
-    })
-
-    /*** ***/
-    
     useEffect(() => {
         document.title = 'Greddiit | Profile';
-      }, []);
+    }, []);
+
+    useEffect(() => {
+        // getting initial data
+        const initRender = async () => {
+            fetch(`http://localhost:5000/access-followers/${user.email}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                  'Content-Type': 'application/json'
+                }, 
+                body: null
+            })
+            .then((result) => {
+                const returnedStatus = result.status;
+
+                if (returnedStatus == 200){
+        
+                    result.json()
+                        .then((body) => {
+                            setFollowingArray([]);
+                            body.following.forEach(entry => {
+                                setFollowingArray(oldArray => [...oldArray, {email: entry.followingEmail}]);
+                            });  
+                            
+                            setFollowersArray([]);
+                            body.followers.forEach(entry => {
+                                setFollowersArray(oldArray => [...oldArray, {email: entry.followerEmail}]);
+                            });   
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        });
+        
+                } else {
+                    console.log("Initial fetch failed");
+                }
+            })
+        }
+
+        initRender();
+    }, [changeArray]);
 
     const theme = createTheme();
 
     // deleting functionality
     const deleteFollower = (followerEmail, followingEmail) => {
-        return function(){
+        return async function(){
             console.log(followerEmail,followingEmail);
             fetch(`http://localhost:5000/delete-follower/${followerEmail}/${followingEmail}`, {
                 method: 'POST',
@@ -88,7 +88,50 @@ const Profile = () => {
             .catch((err) => {
                 console.log(err);
             })
+            setChangeArray(curState => !curState);
         };
+    };
+
+    // adding a following record
+    const createFollowing = async (followingEmailAddress) => {
+        const followerEmailAddress = user.email;
+
+        console.log(`${followerEmailAddress} wants to follow ${followingEmailAddress}`);
+
+        const submittedData = {
+            followerEmail: followerEmailAddress,
+            followingEmail: followingEmailAddress
+        };
+
+        const addFollowerEntryJSON = JSON.stringify(submittedData);
+
+        fetch('http://localhost:5000/add-follower-entry', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          }, 
+          body: addFollowerEntryJSON
+        })
+        .then((result) => {
+            const returnedStatus = result.status;
+            console.log(returnedStatus);
+      
+            if (returnedStatus === 201){
+                console.log("Follower entry Created");
+                setFollowingEmailText("Following entry created");
+            }else if (returnedStatus == 409){
+                setFollowingEmailText("Following entry already exists");
+                console.log("Follower entry couldn't be created");
+            } else {
+                console.log("Follower entry couldn't be created");
+            }
+
+            setChangeArray(curState => !curState);
+        })
+        .catch((err) => {
+            console.log(`Couldn't with error ${err}`);
+        })
     };
 
     // edit profile functionality
@@ -158,7 +201,6 @@ const Profile = () => {
     }
 
     // followers display efunctionality
-    const [areFollowersDisplayed, setAreFollowersDisplayed] = React.useState(false);
     const displayFollowers = () => {
         setAreFollowersDisplayed(!areFollowersDisplayed);
     }
@@ -203,7 +245,6 @@ const Profile = () => {
     }
 
     // following display functionality
-    const [areFollowingDisplayed, setAreFollowingDisplayed] = React.useState(false);
     const displayFollowing = () => {
         setAreFollowingDisplayed(!areFollowingDisplayed);
     }
@@ -248,47 +289,8 @@ const Profile = () => {
         }
     }
 
-    // adding a following record
-
-    const createFollowing = (followingEmailAddress) => {
-        const followerEmailAddress = user.email;
-
-        console.log(`${followerEmailAddress} wants to follow ${followingEmailAddress}`);
-
-        const submittedData = {
-            followerEmail: followerEmailAddress,
-            followingEmail: followingEmailAddress
-        };
-
-        const addFollowerEntryJSON = JSON.stringify(submittedData);
-
-        fetch('http://localhost:5000/add-follower-entry', {
-          method: 'POST',
-          mode: 'cors',
-          headers: {
-            'Content-Type': 'application/json'
-          }, 
-          body: addFollowerEntryJSON
-        })
-        .then((result) => {
-            const returnedStatus = result.status;
-            console.log(returnedStatus);
-      
-            if (returnedStatus === 201){
-                console.log("Follower entry Created");
-            }else {
-                console.log("Follower entry couldn't be created");
-            }
-        })
-        .catch((err) => {
-            console.log(`Couldn't with error ${err}`);
-        })
-    };
-
     // functionality to check whether following email is valid
     const [followingButtonDisabled, SetFollowingButtonDisabled] = React.useState(true);
-    const [validFollowingEmail, setValidFollowingEmail] = React.useState(true);
-
     const checkFollowingEmail = () => {
         const followingEmailLength = document.getElementById('followingEmail').value.length;
         
@@ -310,7 +312,7 @@ const Profile = () => {
         console.log(submittedData);
     
         if (submittedData.email === user.email){
-            setValidFollowingEmail(false);
+            setFollowingEmailText("You cannot follow yourself!");
             return;
         };
 
@@ -330,12 +332,12 @@ const Profile = () => {
       
             if (returnedStatus === 200){
                 console.log("valid Email");
-                setValidFollowingEmail(true);
+                setFollowingEmailText("Creation in process");
 
                 createFollowing(submittedData.email)
             }else {
                 console.log("Invalid email");
-                setValidFollowingEmail(false);
+                setFollowingEmailText("User doesn't exist");
             }
         })
         .catch((err) => {
@@ -498,7 +500,7 @@ const Profile = () => {
                             label="User Email"
                             name="followingEmail"
                             onKeyUp={checkFollowingEmail}
-                            helperText={validFollowingEmail ? "": "Invalid email address"}
+                            helperText={followingEmailText}
                             />
 
                             <Button

@@ -265,7 +265,12 @@ app.post('/add-follower-entry', async (req, res) => {
 
     if (!createdEntry){
       res.status(500).send("Could not access database! Internal Server Error");
-    }
+    };
+
+    var timestamp = createdEntry._id.getTimestamp();
+    console.log(timestamp);
+    timestamp = new Date(timestamp);
+    console.log(timestamp);
 
     res.status(201).send("Made follower Entry");    
   } catch(err){
@@ -292,7 +297,7 @@ app.post('/access-followers/:email', async (req, res) => {
     const returned_data = {
       followers: followerData,
       following: followingData
-    }
+    };
 
     // console.log(returned_data)
 
