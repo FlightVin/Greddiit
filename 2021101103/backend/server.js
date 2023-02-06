@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 
 const tokenKey = require("./secret/token");
 const User = require('./models/User');
+const Follower = require('./models/Follower');
 const {mongoConnect, DB_URI} = require('./database/mongo');
 
 const app = express();
@@ -207,6 +208,79 @@ app.post('/edit', async (req, res) => {
   } catch(err){
     console.log(err);
     res.status(400).send("Invalid Credentials");
+  }
+});
+
+// checking user existence
+app.post('/check-user-existence', async (req, res) => {
+  try{
+    const data = {
+      email
+    } = req.body;
+
+    console.log(data);
+
+    const existingUser = await User.findOne(
+      {email}
+    );
+
+    console.log(existingUser);
+
+    if (!existingUser){
+      return res.status(400).send("Doesn't exist!");
+    }
+    console.log('user found');
+
+    res.status(200).send(JSON.stringify(existingUser));
+
+  } catch(err){
+    console.log(err);
+    res.status(400).send("Invalid Credentials");
+  }
+});
+
+// Adding follower entry
+app.post('/add-follower-entry', async (req, res) => {
+  try{
+    const data = {
+      followerEmail,
+      followingEmail
+    } = req.body;
+
+    console.log(data);
+
+    const existingEntry = await Follower.findOne(
+      {followerEmail,
+      followingEmail}
+    );
+
+    if (existingEntry){
+      return res.status(409).send("Email already in use");
+    }
+
+    const createdEntry = await Follower.create({
+      followerEmail,
+      followingEmail
+    });
+
+    if (!createdEntry){
+      res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    res.status(201).send("Made follower Entry");    
+  } catch(err){
+    console.log(err);
+    res.status(400).send("Couldn't create follower entry");
+  }
+});
+
+// returning followers
+app.post('/access-followers:id', async (req, res) => {
+  try{
+       console.log(id);
+  } catch(err){
+    console.log(err);
+    res.status(400).send("Couldn't create follower entry");
   }
 });
 

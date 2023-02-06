@@ -81,7 +81,7 @@ const Profile = () => {
             console.log(returnedStatus);
       
             if (returnedStatus === 204){
-              console.log("Credentials Updated");
+                console.log("Credentials Updated");
       
                 console.log(result);
                 alert('Details updated. Please login again.');
@@ -185,7 +185,44 @@ const Profile = () => {
         }
     }
 
-    // adding following
+    // adding a following record
+
+    const createFollowing = (followingEmailAddress) => {
+        const followerEmailAddress = user.email;
+
+        console.log(`${followerEmailAddress} wants to follow ${followingEmailAddress}`);
+
+        const submittedData = {
+            followerEmail: followerEmailAddress,
+            followingEmail: followingEmailAddress
+        };
+
+        const addFollowerEntryJSON = JSON.stringify(submittedData);
+
+        fetch('http://localhost:5000/add-follower-entry', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          }, 
+          body: addFollowerEntryJSON
+        })
+        .then((result) => {
+            const returnedStatus = result.status;
+            console.log(returnedStatus);
+      
+            if (returnedStatus === 201){
+                console.log("Follower Entry Created");
+            }else {
+                console.log("Follower entry couldn't be created");
+            }
+        })
+        .catch((err) => {
+            console.log(`Couldn't with error ${err}`);
+        })
+    };
+
+    // functionality to check whether following email is valid
     const [followingButtonDisabled, SetFollowingButtonDisabled] = React.useState(true);
     const [validFollowingEmail, setValidFollowingEmail] = React.useState(true);
 
@@ -209,6 +246,39 @@ const Profile = () => {
         };
         console.log(submittedData);
     
+        if (submittedData.email === user.email){
+            setValidFollowingEmail(false);
+            return;
+        };
+
+        const followingData = JSON.stringify(submittedData);
+
+        fetch('http://localhost:5000/check-user-existence', {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json'
+          }, 
+          body: followingData
+        })
+        .then((result) => {
+            const returnedStatus = result.status;
+            console.log(returnedStatus);
+      
+            if (returnedStatus === 200){
+                console.log("valid Email");
+                setValidFollowingEmail(true);
+
+                createFollowing(submittedData.email)
+            }else {
+                console.log("Invalid email");
+                setValidFollowingEmail(false);
+            }
+        })
+        .catch((err) => {
+            console.log(`Couldn't with error ${err}`);
+        })
+
         const JSONData = JSON.stringify(submittedData);
     }
     
