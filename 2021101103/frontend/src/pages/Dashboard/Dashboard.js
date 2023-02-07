@@ -26,6 +26,7 @@ const Dashboard = () => {
 
     const gotoMyPages = () => {
         console.log('My Pages');
+        navigate('/mypages');
     }
 
     const gotoAllPages = () => {
