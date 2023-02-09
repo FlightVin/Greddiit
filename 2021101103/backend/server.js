@@ -417,7 +417,7 @@ app.delete('/delete-subgreddiit/:name', async (req, res) => {
   }
 });
 
-// page existence
+// page auth
 app.post('/subgreddiit-auth/:name/:email', async (req, res) => {
   try{
     const name = req.params['name'];
@@ -452,7 +452,8 @@ app.post('/subgreddiit-exists/:name', async (req, res) => {
     );
 
     if (existingPage){
-      return res.status(200).send("Page exists");
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(200).send(existingPage);
     }
 
     return res.status(400).send("Doesn't exist");
@@ -500,6 +501,79 @@ app.post('/join-subgreddiit/:name/:email', async (req, res) => {
     console.log(err);
   }
 });
+
+// joining a page
+app.post('/accept-user-subgreddiit/:name/:email', async (req, res) => {
+  try{
+    const name = req.params['name'];
+    const email = req.params['email'];
+
+    console.log(name, email);
+
+    const existingPage = await Subgreddiit.findOne(
+      {name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}
+    );
+
+    if (!existingPage){
+      return res.status(400).send("Doesn't exist");
+    }
+
+    if (existingPage.userEmails.includes(email)){
+      return res.status(409).send("Already Added");
+    }
+
+    const return_page = await Subgreddiit.findOneAndUpdate({name},{
+      userEmails: [...existingPage.userEmails, email],
+      joinRequestEmails: existingPage.joinRequestEmails.filter(curemail => curemail != email)
+    }, {
+      new: true
+    });
+
+    if (!return_page){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(200).send("Page exists");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// rejecting from a page
+app.post('/reject-user-subgreddiit/:name/:email', async (req, res) => {
+  try{
+    const name = req.params['name'];
+    const email = req.params['email'];
+
+    console.log(name, email);
+
+    const existingPage = await Subgreddiit.findOne(
+      {name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}
+    );
+
+    if (!existingPage){
+      return res.status(400).send("Doesn't exist");
+    }
+
+    const return_page = await Subgreddiit.findOneAndUpdate({name},{
+      joinRequestEmails: existingPage.joinRequestEmails.filter(curemail => curemail != email)
+    }, {
+      new: true
+    });
+
+    if (!return_page){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(200).send("Page exists");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+
 
 // server
 const server = http.createServer(app);

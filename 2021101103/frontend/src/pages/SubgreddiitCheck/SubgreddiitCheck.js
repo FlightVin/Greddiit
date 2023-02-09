@@ -60,7 +60,11 @@ const MySubgreddiitCheck = ({children}) => {
     }
 
     if (isValid){
-        return React.cloneElement(children, { state: {mypageValidation: user.email} });
+        let returnVal = [];
+        React.Children.forEach(children, child => {
+            returnVal.push(React.cloneElement(child, { state: {mypageValidation: user.email} }));
+        })
+        return returnVal;
     } else {
         return <Navigate to="/404" replace />;
     }

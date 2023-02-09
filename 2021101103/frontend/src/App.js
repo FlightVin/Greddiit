@@ -7,6 +7,7 @@ import Protected from './pages/Protected/Protected';
 import LoginBypass from './pages/LoginBypass/LoginBypass'
 import MyPages from './pages/MyPages/MyPages';
 import AllPages from './pages/AllPages/AllPages';
+import JoinRequests from './pages/JoinRequests/JoinRequests';
 import { SubgreddiitCheck, MySubgreddiitCheck} from './pages/SubgreddiitCheck/SubgreddiitCheck';
 
 function App() {
@@ -50,9 +51,6 @@ function App() {
       } />
 
       {/* moderator access */}
-      <Route path="/mysubgreddiit/:name" element={
-        <Navigate to='./users' />
-      } />
 
       <Route path="/mysubgreddiit/:name/users" element={
         <Protected>
@@ -69,6 +67,10 @@ function App() {
             <JoinRequests />
           </MySubgreddiitCheck>
         </Protected>
+      } />
+
+      <Route path="/mysubgreddiit/:name" element={
+        <Navigate to='./users' />
       } />
 
       {/* global access */}
