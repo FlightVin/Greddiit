@@ -20,6 +20,7 @@ const Profile = () => {
     const [changeArray, setChangeArray] = React.useState(true);
     const [areFollowersDisplayed, setAreFollowersDisplayed] = React.useState(false);
     const [areFollowingDisplayed, setAreFollowingDisplayed] = React.useState(false);
+    const [followingButtonDisabled, SetFollowingButtonDisabled] = React.useState(true);
 
     useEffect(() => {
         document.title = 'Greddiit | Profile';
@@ -39,7 +40,7 @@ const Profile = () => {
             .then((result) => {
                 const returnedStatus = result.status;
 
-                if (returnedStatus == 200){
+                if (returnedStatus === 200){
         
                     result.json()
                         .then((body) => {
@@ -64,7 +65,7 @@ const Profile = () => {
         }
 
         initRender();
-    }, [changeArray]);
+    }, [changeArray, user.email]);
 
     const theme = createTheme();
 
@@ -73,7 +74,7 @@ const Profile = () => {
         return async function(){
             console.log(followerEmail,followingEmail);
             fetch(`http://localhost:5000/delete-follower/${followerEmail}/${followingEmail}`, {
-                method: 'POST',
+                method: 'DELETE',
                 mode: 'cors',
                 headers: {
                 'Content-Type': 'application/json'
@@ -84,16 +85,18 @@ const Profile = () => {
                 const returnedStatus = result.status;
             
                 console.log(`Returned status for deletion: ${returnedStatus}`);
+                setChangeArray(curState => !curState);
             })
             .catch((err) => {
                 console.log(err);
             })
-            setChangeArray(curState => !curState);
+           
         };
     };
 
     // adding a following record
     const createFollowing = async (followingEmailAddress) => {
+        SetFollowingButtonDisabled(true);
         const followerEmailAddress = user.email;
 
         console.log(`${followerEmailAddress} wants to follow ${followingEmailAddress}`);
@@ -120,7 +123,7 @@ const Profile = () => {
             if (returnedStatus === 201){
                 console.log("Follower entry Created");
                 setFollowingEmailText("Following entry created");
-            }else if (returnedStatus == 409){
+            }else if (returnedStatus === 409){
                 setFollowingEmailText("Following entry already exists");
                 console.log("Follower entry couldn't be created");
             } else {
@@ -128,6 +131,7 @@ const Profile = () => {
             }
 
             setChangeArray(curState => !curState);
+            SetFollowingButtonDisabled(false);
         })
         .catch((err) => {
             console.log(`Couldn't with error ${err}`);
@@ -290,7 +294,6 @@ const Profile = () => {
     }
 
     // functionality to check whether following email is valid
-    const [followingButtonDisabled, SetFollowingButtonDisabled] = React.useState(true);
     const checkFollowingEmail = () => {
         const followingEmailLength = document.getElementById('followingEmail').value.length;
         
@@ -343,8 +346,6 @@ const Profile = () => {
         .catch((err) => {
             console.log(`Couldn't with error ${err}`);
         })
-
-        const JSONData = JSON.stringify(submittedData);
     }
     
 
@@ -506,7 +507,7 @@ const Profile = () => {
                             <Button
                             type="submit"
                             fullWidth
-                            variant="fullwidth"
+                            variant="outlined"
                             id = "addFollowingButton"
                             disabled={followingButtonDisabled}
                             sx={{ mt: 3, mb: 2 }}

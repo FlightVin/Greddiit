@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs');
 const tokenKey = require("./secret/token");
 const User = require('./models/User');
 const Follower = require('./models/Follower');
+const Subgreddiit = require('./models/Subgreddiit');
 const {mongoConnect, DB_URI} = require('./database/mongo');
 
 const app = express();
@@ -26,18 +27,15 @@ app.post('/auth', async (req, res) => {
   try{
     
     const { token } = req.body;
-    console.log(token);  
-    
-    // res.status(200).send("OK token validated");
+    console.log(token);
 
-    jwt.verify(token, tokenKey, (err) => {
-      if (err) {
-        console.log(`Unauthorized with token ${err}`);
-        res.status(401).send("Unauthorized access");
-      } else {
-        res.status(200).send("Valid token");
-      }
-    });
+    try {
+      const decoded = jwt.verify(token, tokenKey);
+      res.setHeader('Content-Type', 'application/json');
+      res.status(200).send(decoded);
+    } catch (err) {
+      res.status(401).send("Invalid Token");
+    }
 
   } catch(err) {
     console.log(err);
@@ -63,7 +61,7 @@ app.post('/login', async (req, res) => {
     .then((result) => {
       if (!result){
         console.log("Password comparison failed");
-        res.status(403).send("Invalid Credentials");
+        return res.status(403).send("Invalid Credentials");
       } else {
         const return_user = existingUser;
 
@@ -80,13 +78,13 @@ app.post('/login', async (req, res) => {
         console.log(return_user);
 
         res.setHeader('Content-Type', 'application/json');
-        res.status(200).send(return_user);
+        return res.status(200).send(return_user);
       }
     })
 
   } catch(err){
     console.log(err);
-    res.status(400).send("Invalid Credentials");
+    return res.status(400).send("Invalid Credentials");
   }
 });
 
@@ -125,7 +123,7 @@ app.post('/register', async (req, res) => {
     });
 
     if (!return_user){
-      res.status(500).send("Could not access database! Internal Server Error");
+      return res.status(500).send("Could not access database! Internal Server Error");
     }
 
     const token = jwt.sign(
@@ -139,7 +137,7 @@ app.post('/register', async (req, res) => {
     return_user.token = token;
 
     res.setHeader('Content-Type', 'application/json');
-    res.status(201).send(return_user);
+    return res.status(201).send(return_user);
 
   } catch(err){
     console.log(err);
@@ -187,7 +185,7 @@ app.post('/edit', async (req, res) => {
     });
 
     if (!return_user){
-      res.status(500).send("Could not access database! Internal Server Error");
+      return res.status(500).send("Could not access database! Internal Server Error");
     }
 
     const token = jwt.sign(
@@ -203,11 +201,11 @@ app.post('/edit', async (req, res) => {
     console.log(JSON.stringify(return_user));
 
     res.setHeader('Content-Type', 'application/json');
-    res.status(204).send(JSON.stringify(return_user));
+    return res.status(204).send(JSON.stringify(return_user));
 
   } catch(err){
     console.log(err);
-    res.status(400).send("Invalid Credentials");
+    return res.status(400).send("Invalid Credentials");
   }
 });
 
@@ -231,11 +229,11 @@ app.post('/check-user-existence', async (req, res) => {
     }
     console.log('user found');
 
-    res.status(200).send(JSON.stringify(existingUser));
+    return res.status(200).send(JSON.stringify(existingUser));
 
   } catch(err){
     console.log(err);
-    res.status(400).send("Invalid Credentials");
+    return res.status(400).send("Invalid Credentials");
   }
 });
 
@@ -264,7 +262,7 @@ app.post('/add-follower-entry', async (req, res) => {
     });
 
     if (!createdEntry){
-      res.status(500).send("Could not access database! Internal Server Error");
+      return res.status(500).send("Could not access database! Internal Server Error");
     };
 
     var timestamp = createdEntry._id.getTimestamp();
@@ -272,10 +270,10 @@ app.post('/add-follower-entry', async (req, res) => {
     timestamp = new Date(timestamp);
     console.log(timestamp);
 
-    res.status(201).send("Made follower Entry");    
+    return res.status(201).send("Made follower Entry");    
   } catch(err){
     console.log(err);
-    res.status(400).send("Couldn't create follower entry");
+    return res.status(400).send("Couldn't create follower entry");
   }
 });
 
@@ -302,16 +300,16 @@ app.post('/access-followers/:email', async (req, res) => {
     // console.log(returned_data)
 
     res.setHeader('Content-Type', 'application/json');
-    res.status(200).send(JSON.stringify(returned_data));
+    return res.status(200).send(JSON.stringify(returned_data));
 
   } catch(err){
     console.log(err);
-    res.status(400).send("Couldn't create follower entry");
+    return res.status(400).send("Couldn't create follower entry");
   }
 });
 
 // deleting follower entry
-app.post('/delete-follower/:followerEmail/:followingEmail', async (req, res) => {
+app.delete('/delete-follower/:followerEmail/:followingEmail', async (req, res) => {
   try{
     const following_email = req.params['followingEmail'];
     const follower_email = req.params['followerEmail'];
@@ -323,11 +321,183 @@ app.post('/delete-follower/:followerEmail/:followingEmail', async (req, res) => 
       followingEmail: following_email
     });
     
-    res.status(200).send(returned_data);
+    return res.status(200).send(returned_data);
 
   } catch(err){
     console.log(err);
-    res.status(400).send("Couldn't create follower entry");
+    return res.status(400).send("Couldn't create follower entry");
+  }
+});
+
+// creation of subgreddiit
+app.post('/create-subgreddiit', async (req, res) => {
+  try{
+    const {
+      name, 
+      moderatorEmail,
+      description,
+      bannedWords
+    } = req.body;
+
+    const existingPage = await Subgreddiit.findOne(
+      {name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}
+    );
+
+    if (existingPage){
+      return res.status(409).send("Page name already in use");
+    }
+
+    const return_page = await Subgreddiit.create({
+      name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase(), 
+      moderatorEmail,
+      userEmails: [moderatorEmail],
+      description,
+      bannedWords:  bannedWords.split(',')
+    });
+
+    if (!return_page){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(201).send("created");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// accessing subgreddiit of a user
+app.post('/access-subgreddiits/:email', async (req, res) => {
+  try{
+    const currentEmail = req.params['email'];
+
+    const returned_data = await Subgreddiit.find({
+      moderatorEmail: currentEmail
+    });
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify(returned_data));
+
+  } catch(err){
+    console.log(err);
+    return res.status(400).send("Couldn't delete follower entry");
+  }
+});
+
+// accessing all subgreddiit
+app.post('/access-subgreddiits', async (req, res) => {
+  try{
+    const returned_data = await Subgreddiit.find();
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify(returned_data));
+
+  } catch(err){
+    console.log(err);
+    return res.status(400).send("Couldn't delete follower entry");
+  }
+});
+
+// deleting subgreddiit page
+app.delete('/delete-subgreddiit/:name', async (req, res) => {
+  try{
+    const name = req.params['name'];
+
+    console.log(name);
+
+    const returned_data = await Subgreddiit.findOneAndDelete({
+      name
+    });
+    
+    return res.status(200).send(returned_data);
+
+  } catch(err){
+    console.log(err);
+    return res.status(400).send("Couldn't delete subgreddiit");
+  }
+});
+
+// page existence
+app.post('/subgreddiit-auth/:name/:email', async (req, res) => {
+  try{
+    const name = req.params['name'];
+    const email = req.params['email'];
+
+    console.log(name)
+
+    const existingPage = await Subgreddiit.findOne(
+      {name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}
+    );
+
+    if (existingPage && email === existingPage.moderatorEmail){
+      return res.status(200).send("Page exists");
+    }
+
+    return res.status(400).send("Doesn't exist");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// page existence
+app.post('/subgreddiit-exists/:name', async (req, res) => {
+  try{
+    const name = req.params['name'];
+
+    console.log(name)
+
+    const existingPage = await Subgreddiit.findOne(
+      {name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}
+    );
+
+    if (existingPage){
+      return res.status(200).send("Page exists");
+    }
+
+    return res.status(400).send("Doesn't exist");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// joining a page
+app.post('/join-subgreddiit/:name/:email', async (req, res) => {
+  try{
+    const name = req.params['name'];
+    const email = req.params['email'];
+
+    console.log(name, email);
+
+    const existingPage = await Subgreddiit.findOne(
+      {name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}
+    );
+
+    if (!existingPage){
+      return res.status(400).send("Doesn't exist");
+    }
+
+    console.log(existingPage.joinRequestEmails);
+
+    if (existingPage.joinRequestEmails.includes(email)){
+      return res.status(409).send("ALready requested");
+    }
+
+    const return_page = await Subgreddiit.findOneAndUpdate({name},{
+      joinRequestEmails: [...existingPage.joinRequestEmails, email]
+    }, {
+      new: true
+    });
+
+    if (!return_page){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(200).send("Page exists");
+
+  } catch(err){
+    console.log(err);
   }
 });
 

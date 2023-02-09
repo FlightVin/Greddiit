@@ -5,24 +5,23 @@
     background-color: teal;
 }
 
-#dashProfileIcon:hover {
-    background-color: teal;
+.dashOnMypages {
+    margin-left: 20px;
+    border-radius: 20px;
+    background-color: rgb(30, 150, 150);
+    padding: 5px;
 }
 
-#dashMypagesIcon:hover {
-    background-color: teal;
-}
-
-#dashAllpagesIcon:hover {
-    background-color: teal;
-}
-
-#dashSavedpostsIcon:hover {
-
-}
 
 #dashLogoutIcon:hover {
     cursor: pointer;
     border-radius: 10px;
     background-color: crimson;
+}
+
+.myPagesIconClass:hover {
+    cursor: pointer;
+    border-radius: 10px;
+    width: 55px;
+    background-color: rgb(0, 85, 128);
 }

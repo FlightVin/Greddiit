@@ -7,6 +7,7 @@ const Protected = ({children}) => {
     const [isLoading, setLoading] = useState(true);
     const [isValid, setIsValid] = useState(false);
 
+    const user = JSON.parse(localStorage.getItem('grediit-user-details'));
     const userToken = localStorage.getItem('grediit-user-token');
     console.log(userToken);
 
@@ -37,13 +38,24 @@ const Protected = ({children}) => {
 
                     console.log(`Returned status: ${returnedStatus}`);
 
-                    if (returnedStatus === 200){
-                        setIsValid(true);
-                        setLoading(false);
-                    } else {
-                        setIsValid(false);
-                        setLoading(false); 
-                    }
+                    let emailValid = false;
+
+                    result.json()
+                        .then((body) => {
+                            if (user && user.email && body.email === user.email)
+                                emailValid = true;
+
+                            if (returnedStatus === 200 && emailValid){
+                                setIsValid(true);
+                                setLoading(false);
+                            } else {
+                                setIsValid(false);
+                                setLoading(false); 
+                            }
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                        });
                   });
             }
         }, 1000);
