@@ -52,7 +52,7 @@ const AllPages = () => {
                                 setSubgreddiitList(oldArray => [
                                     ...oldArray,
                                     {
-                                        date: entry.creationDate,
+                                        creationTimestamp: entry._id.toString().substring(0,8),
                                         name: entry.name,
                                         moderatorEmail: entry.moderatorEmail,
                                         userEmails: entry.userEmails,
@@ -321,17 +321,17 @@ const AllPages = () => {
         }
 
         const dateSort = (entry1, entry2) => {
-            const date1 = entry1.date;
-            const date2 = entry2.date;
-
-            console.log(date1, date2);
+            const date1 = new Date( parseInt( 
+                entry1.creationTimestamp, 16 ) * 1000 );
+            const date2 = new Date( parseInt( 
+                entry2.creationTimestamp, 16 ) * 1000 );
 
             if (date1 < date2){
-                return -1;
+                return 1;
             }
 
             if (date1 > date2){
-                return 1;
+                return -1;
             }
 
             return 0;
@@ -339,11 +339,25 @@ const AllPages = () => {
 
         setCurrentSubgreddiitList(currentSUbgreddiitList.sort(
             (entry1, entry2) => {
+                let cur_val = 0;
 
-                if (curSortingCriteria[0] === 'alphaAscSort')
-                    return alphaAscSort(entry1, entry2);
+                for (const criteria of curSortingCriteria) {
 
-                return dateSort(entry1, entry2);
+                    if (criteria === 'alphaAscSort'){
+                        cur_val = alphaAscSort(entry1, entry2);
+                    } else if (criteria === 'alphaDescSort'){
+                        cur_val = alphaDescSort(entry1, entry2);
+                    } else if (criteria === 'followerSort'){
+                        cur_val = followerSort(entry1, entry2);
+                    } else if (criteria === 'dateSort'){
+                        cur_val = dateSort(entry1, entry2);
+                    }
+
+                    if (cur_val != 0)
+                        break;
+                }
+
+                return cur_val;
             }
         ));
 
