@@ -59,7 +59,7 @@ const Protected = ({children}) => {
                   });
             }
         }, 1000);
-    }, [userToken]);
+    }, [userToken, user]);
 
 
     if (isLoading) {

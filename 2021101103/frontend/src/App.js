@@ -51,7 +51,6 @@ function App() {
         </Protected>
       } />
 
-      {/* moderator access */}
 
       <Route path="/mysubgreddiit/:name/users" element={
         <Protected>
@@ -75,7 +74,7 @@ function App() {
         <Navigate to='./users' />
       } />
 
-      {/* global access */}
+
       <Route path="/subgreddiit/:name" element={
         <Protected>
           <SubgreddiitCheck>

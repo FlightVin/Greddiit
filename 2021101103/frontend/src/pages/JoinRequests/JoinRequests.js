@@ -15,7 +15,7 @@ const JoinRequests = () => {
 
     useEffect(() => {
         document.title = `Greddiit | ${name} | Join Requests`;
-    }, []);
+    }, [name]);
 
     useEffect(() => {
         // getting initial data
@@ -48,7 +48,7 @@ const JoinRequests = () => {
         }
 
         initRender();
-    }, [changeArray, user.email]);
+    }, [changeArray, user.email, name]);
 
     const rejectJoin = (joineeEmail) => {
         return async function() {

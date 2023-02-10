@@ -50,7 +50,7 @@ const MySubgreddiitCheck = ({children}) => {
                   });
             }
         }, 2000);
-    }, [userToken]);
+    }, [userToken, name, user]);
 
 
     if (isLoading) {
@@ -119,7 +119,7 @@ const SubgreddiitCheck = ({children}) => {
                   });
             }
         }, 2000);
-    }, [userToken]);
+    }, [userToken, name, user]);
 
 
     if (isLoading) {

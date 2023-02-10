@@ -4,7 +4,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Logout from '../../functionality/Logout'
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import BookmarksIcon from '@mui/icons-material/Bookmarks';
 import AddBoxIcon from '@mui/icons-material/AddBox';

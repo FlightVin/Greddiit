@@ -390,6 +390,15 @@ app.post('/access-subgreddiits', async (req, res) => {
   try{
     const returned_data = await Subgreddiit.find();
 
+    returned_data.forEach(entry => {
+      console.log(entry);
+      console.log(entry._id.getTimestamp());
+      entry.creationDate = entry._id.getTimestamp();
+      console.log(entry);
+    })
+
+    // console.log(returned_data);
+
     res.setHeader('Content-Type', 'application/json');
     return res.status(200).send(JSON.stringify(returned_data));
 

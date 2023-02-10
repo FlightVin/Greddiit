@@ -82,7 +82,7 @@ const SubGreddiitUsers = () => {
         <div className="mypage">
             <div className="list-subgreddiit">
                 <div className="list-header">
-                    <h2>Join Requests</h2>
+                    <h2>Existing Users</h2>
                 </div>
                 <div className="subgreddiit-panes">
                     {renderJoinRequests()}

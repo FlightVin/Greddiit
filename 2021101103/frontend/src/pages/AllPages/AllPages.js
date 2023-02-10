@@ -12,6 +12,9 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
+import FuzzySearch from 'fuzzy-search';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 const AllPages = () => {
     const navigate = useNavigate();
@@ -49,7 +52,7 @@ const AllPages = () => {
                                 setSubgreddiitList(oldArray => [
                                     ...oldArray,
                                     {
-                                        __id: entry.__id,
+                                        date: entry.creationDate,
                                         name: entry.name,
                                         moderatorEmail: entry.moderatorEmail,
                                         userEmails: entry.userEmails,
@@ -74,8 +77,10 @@ const AllPages = () => {
             })
         }
 
+        console.log('Rendering');
+
         initRender();
-    }, [changeArray, user.email]);
+    }, [currentSUbgreddiitList, changeArray, user.email]);
 
     // rendering subgreddiits
     const renderPages = () => {
@@ -176,17 +181,170 @@ const AllPages = () => {
         };
     }
 
-    const [searchButtonDisabled, setSetSearchButtonDisabled] = React.useState(false);
-
     const handleSearch = (event) => {
         event.preventDefault();
 
         const data = new FormData(event.currentTarget);
         const submittedKeyword = data.get('searchKeyword').toLowerCase();
-        console.log(`Search on ${submittedKeyword}`);
+
+        if (submittedKeyword.length > 0 && submittedKeyword.charAt(0) === '~'){
+            const fuzzyKeyword = submittedKeyword.slice(1);
+            console.log(`Fuzzy Search on ${fuzzyKeyword}`);
+
+            const searcher = new FuzzySearch(subgreddiitList, ['name'], {
+                caseSensitive: false,
+            });
+
+            const result = searcher.search(fuzzyKeyword);
+            setCurrentSubgreddiitList(result);
+        } else {
+            console.log(`Normal Search on ${submittedKeyword}`);
+
+            setCurrentSubgreddiitList(subgreddiitList.filter(
+                entry => entry.name.toLowerCase().includes(submittedKeyword)
+            ));
+        }
+    }
+
+    const handleFilter = (event) => {
+        event.preventDefault();
+
+        console.log("FIlter called");  
+        
+        const data = new FormData(event.currentTarget);
+        const submittedFilters = {
+            filterMinPostNumber: data.get('filterMinimumPosts'),
+            filterMaxPostNumber: data.get('filterMaximumPosts'),
+            filterMinUserNumber: data.get('filterMinimumUsers'),
+            filterMaxUserNumber: data.get('filterMaximumUsers')
+        }
+
+        if (submittedFilters.filterMinPostNumber === ''){
+            submittedFilters.filterMinPostNumber = 0;
+        } else {
+            submittedFilters.filterMinPostNumber = 
+                Number(submittedFilters.filterMinPostNumber);
+        }
+
+        if (submittedFilters.filterMaxPostNumber === ''){
+            submittedFilters.filterMaxPostNumber = Infinity;
+        } else {
+            submittedFilters.filterMaxPostNumber = 
+                Number(submittedFilters.filterMaxPostNumber);
+        }
+
+        if (submittedFilters.filterMinUserNumber === ''){
+            submittedFilters.filterMinUserNumber = 0;
+        } else {
+            submittedFilters.filterMinUserNumber = 
+                Number(submittedFilters.filterMinUserNumber);
+        }
+
+        if (submittedFilters.filterMaxUserNumber === ''){
+            submittedFilters.filterMaxUserNumber = Infinity;
+        } else {
+            submittedFilters.filterMaxUserNumber = 
+                Number(submittedFilters.filterMaxUserNumber);
+        }
+
+        console.log(submittedFilters);
 
         setCurrentSubgreddiitList(subgreddiitList.filter(
-            entry => entry.name.toLowerCase().includes(submittedKeyword)
+            entry => 
+                entry.userEmails.length >= submittedFilters.filterMinUserNumber
+                && entry.userEmails.length <= submittedFilters.filterMaxUserNumber
+                && entry.postObjectIDs.length >= submittedFilters.filterMinPostNumber
+                && entry.postObjectIDs.length <= submittedFilters.filterMaxPostNumber
+        ));
+    }
+
+    const handleSearchandFilter = (event) => {
+        event.preventDefault();
+        handleSearch(event);
+        handleFilter(event);
+    }
+
+    const [curSortingCriteria, setCurSortingCriteria] = React.useState([]);
+    const handleSortingCriteria = (event, newCriteria) => {
+        setCurSortingCriteria(newCriteria);
+    }
+
+    const handleSort = (event) => {
+        event.preventDefault();
+
+        console.log('Sorting called with criteria', curSortingCriteria);
+
+        const alphaAscSort = (entry1, entry2) => {
+            const name1 = entry1.name.toLowerCase();
+            const name2 = entry2.name.toLowerCase();
+
+            if (name1 < name2){
+                return -1;
+            }
+
+            if (name1 > name2){
+                return 1;
+            }
+
+            return 0;
+        }
+
+
+        const alphaDescSort = (entry1, entry2) => {
+            const name1 = entry1.name.toLowerCase();
+            const name2 = entry2.name.toLowerCase();
+
+            if (name1 < name2){
+                return 1;
+            }
+
+            if (name1 > name2){
+                return -1;
+            }
+
+            return 0;
+        }
+
+        const followerSort = (entry1, entry2) => {
+            const userNum1 = entry1.userEmails.length;
+            const userNum2 = entry2.userEmails.length;
+
+            if (userNum1 < userNum2){
+                return 1;
+            }
+
+            if (userNum1 > userNum2){
+                return -1;
+            }
+
+            return 0;
+        }
+
+        const dateSort = (entry1, entry2) => {
+            const date1 = entry1.date;
+            const date2 = entry2.date;
+
+            console.log(date1, date2);
+
+            if (date1 < date2){
+                return -1;
+            }
+
+            if (date1 > date2){
+                return 1;
+            }
+
+            return 0;
+        }
+
+        setCurrentSubgreddiitList(currentSUbgreddiitList.sort(
+            (entry1, entry2) => {
+
+                if (curSortingCriteria[0] === 'alphaAscSort')
+                    return alphaAscSort(entry1, entry2);
+
+                return dateSort(entry1, entry2);
+            }
         ));
 
         setChangeArray(curState => !curState);
@@ -210,11 +368,14 @@ const AllPages = () => {
                         >
 
 
-                        <Typography component="h1" variant="h5">
-                            Search SubGreddiits
-                        </Typography>
-
-                        <Box component="form" onSubmit={handleSearch} noValidate sx={{ mt: 1 }}>
+                        <Box component="form" onSubmit={handleSearchandFilter} noValidate sx={{ mt: 1 }}>
+                            <Typography component="h1" variant="h5"
+                            sx={{
+                                display:"flex",
+                                justifyContent:'center'
+                            }}>
+                            Search and Filter
+                            </Typography>
 
                             <TextField
                             margin="normal"
@@ -223,44 +384,54 @@ const AllPages = () => {
                             id="searchKeyword"
                             label="Keyword"
                             name="searchKeyword"
+                            helperText="Start with ~ for fuzzy search"
+                            />
+                            
+                            <div className="filter-pane">
+                            <TextField
+                            margin="normal"
+                            fullWidth
+                            id="filterMinimumPosts"
+                            label="Minimum Number of Posts"
+                            name="filterMinimumPosts"
+                            type="number"
                             />
 
-                            <Button
-                            type="submit"
+                            <TextField
+                            margin="normal"
                             fullWidth
-                            variant="outlined"
-                            id = "searchButton"
-                            disabled={searchButtonDisabled}
-                            sx={{ mt: 3, mb: 2 }}
-                            >
-                                Search
-                            </Button>
-                        </Box>
-                        </Box>
-                    </Container>
-                    </ThemeProvider>
-                    {/******/}  
+                            id="filterMaximumPosts"
+                            label="Maximum Number of Posts"
+                            name="filterMaximumPosts"
+                            type="number"
+                            />
 
+                            <TextField
+                            margin="normal"
+                            fullWidth
+                            id="filterMinimumUsers"
+                            label="Minimum Number of Users"
+                            name="filterMinimumUsers"
+                            type="number"
+                            />
 
-                    {/*** MUI Template ***/}
-                    <ThemeProvider theme={theme}>
-                    <Container component="main" maxWidth="xs">
-                        <CssBaseline />
+                            <TextField
+                            margin="normal"
+                            fullWidth
+                            id="filterMaximumUsers"
+                            label="Maximum Number of Users"
+                            name="filterMaximumUsers"
+                            type="number"
+                            />
+                            </div>
 
-                        <Box
-                        sx={{
-                            marginTop: 8,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                        }}
-                        >
-
-                        <Typography component="h1" variant="h5">
-                            Filter SubGreddiits
-                        </Typography>
-
-                        <Box component="form" onSubmit={handleSearch} noValidate sx={{ mt: 1 }}>
+                            <Typography component="h1"
+                            sx={{
+                                display:"flex",
+                                justifyContent:'center'
+                            }}>
+                            (Leave field blank if not used - input blank for all SubGreddiits)
+                            </Typography>
 
                             <Button
                             type="submit"
@@ -269,8 +440,9 @@ const AllPages = () => {
                             id = "filterButton"
                             sx={{ mt: 3, mb: 2 }}
                             >
-                                Filter
+                                Search and Filter
                             </Button>
+
                         </Box>
                         </Box>
                     </Container>
@@ -295,13 +467,25 @@ const AllPages = () => {
                             Sort SubGreddiits
                         </Typography>
 
-                        <Box component="form" onSubmit={handleSearch} noValidate sx={{ mt: 1 }}>
+                        <Box component="form" onSubmit={handleSort} noValidate sx={{ mt: 1 }}>
+
+                            <ToggleButtonGroup
+                                color="primary"
+                                value={curSortingCriteria}
+                                onChange={handleSortingCriteria}
+                            >
+                                <ToggleButton value="alphaAscSort">Alphabetical (ascending)</ToggleButton>
+                                <ToggleButton value="alphaDescSort">Alphabetical (descending)</ToggleButton>
+                                <ToggleButton value="followerSort">Follower Count</ToggleButton>
+                                <ToggleButton value="dateSort">Creation Date</ToggleButton>
+                            </ToggleButtonGroup>
+
 
                             <Button
                             type="submit"
                             fullWidth
                             variant="outlined"
-                            id = "searchButton"
+                            id = "sortButton"
                             sx={{ mt: 3, mb: 2 }}
                             >
                                 Sort
