@@ -9,6 +9,7 @@ const tokenKey = require("./secret/token");
 const User = require('./models/User');
 const Follower = require('./models/Follower');
 const Subgreddiit = require('./models/Subgreddiit');
+const Post = require('./models/Post');
 const {mongoConnect, DB_URI} = require('./database/mongo');
 
 const app = express();
@@ -573,7 +574,7 @@ app.post('/reject-user-subgreddiit/:name/:email', async (req, res) => {
   }
 });
 
-
+// creating post
 
 // server
 const server = http.createServer(app);

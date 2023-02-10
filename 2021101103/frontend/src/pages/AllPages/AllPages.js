@@ -1,6 +1,10 @@
 import './AllPages.css'
 import { useEffect } from 'react';
 import * as React from 'react';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { useNavigate } from 'react-router-dom';
+import { Tooltip } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -8,11 +12,6 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { useNavigate } from 'react-router-dom';
-import { Tooltip } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 
 const AllPages = () => {
     const navigate = useNavigate();
@@ -24,6 +23,7 @@ const AllPages = () => {
     }, []);
 
     const [subgreddiitList, setSubgreddiitList] = React.useState([]);
+    const [currentSUbgreddiitList, setCurrentSubgreddiitList] = React.useState([]);
     const [changeArray, setChangeArray] = React.useState(false);
 
     useEffect(() => {
@@ -46,27 +46,28 @@ const AllPages = () => {
                         .then((body) => {
                             setSubgreddiitList([]);
                             body.forEach(entry => {
-                            setSubgreddiitList(oldArray => [
-                                ...oldArray,
-                                {
-                                    name: entry.name,
-                                    moderatorEmail: entry.moderatorEmail,
-                                    userEmails: entry.userEmails,
-                                    blockedUserEmails: entry.blockedUserEmails,
-                                    postObjectIDs: entry.postObjectIDs,
-                                    bannedWords:
-                                        entry.bannedWords.join(', '),
-                                    description: entry.description,
-                                    joinRequestEmails: entry.joinRequestEmails,
-                                    reportedPostObjectIDs: entry.reportedPostObjectIDs
-                                }
-                            ])  
+                                setSubgreddiitList(oldArray => [
+                                    ...oldArray,
+                                    {
+                                        __id: entry.__id,
+                                        name: entry.name,
+                                        moderatorEmail: entry.moderatorEmail,
+                                        userEmails: entry.userEmails,
+                                        blockedUserEmails: entry.blockedUserEmails,
+                                        postObjectIDs: entry.postObjectIDs,
+                                        bannedWords:
+                                            entry.bannedWords.join(', '),
+                                        description: entry.description,
+                                        joinRequestEmails: entry.joinRequestEmails,
+                                        reportedPostObjectIDs: entry.reportedPostObjectIDs
+                                    }
+                                ]) 
                             })
                         })
                         .catch((err) => {
                             console.log(err);
                         });
-        
+
                 } else {
                     console.log("Initial fetch failed");
                 }
@@ -78,12 +79,11 @@ const AllPages = () => {
 
     // rendering subgreddiits
     const renderPages = () => {
-        if (subgreddiitList.length > 0){
+        if (currentSUbgreddiitList.length > 0){
             var returnval = [];
 
-            subgreddiitList.forEach(entry => {
-                let currentDeleteIconID = `deletePage${entry.name}`;
-
+        
+            currentSUbgreddiitList.forEach(entry => {
                 returnval.push(
                     <div className="subgreddiit-pane">
                         <p>
@@ -131,7 +131,15 @@ const AllPages = () => {
 
             return returnval;
         } else {
-            return "No Subgreddiits";
+            return( <div style={{textAlign:'center'}}>
+                <p>
+                    No SubGreddiits Found
+                </p>
+                <p style={{fontSize:'14px'}}> 
+                    (Search for empty string for all SubGreddiits)
+                </p>
+            </div>
+            );
         }
     }
 
@@ -168,8 +176,141 @@ const AllPages = () => {
         };
     }
 
+    const [searchButtonDisabled, setSetSearchButtonDisabled] = React.useState(false);
+
+    const handleSearch = (event) => {
+        event.preventDefault();
+
+        const data = new FormData(event.currentTarget);
+        const submittedKeyword = data.get('searchKeyword').toLowerCase();
+        console.log(`Search on ${submittedKeyword}`);
+
+        setCurrentSubgreddiitList(subgreddiitList.filter(
+            entry => entry.name.toLowerCase().includes(submittedKeyword)
+        ));
+
+        setChangeArray(curState => !curState);
+    }
+
     return (
         <div className="allpages">
+
+                    {/*** MUI Template ***/}
+                    <ThemeProvider theme={theme}>
+                    <Container component="main" maxWidth="xs">
+                        <CssBaseline />
+
+                        <Box
+                        sx={{
+                            marginTop: 8,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                        }}
+                        >
+
+
+                        <Typography component="h1" variant="h5">
+                            Search SubGreddiits
+                        </Typography>
+
+                        <Box component="form" onSubmit={handleSearch} noValidate sx={{ mt: 1 }}>
+
+                            <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="searchKeyword"
+                            label="Keyword"
+                            name="searchKeyword"
+                            />
+
+                            <Button
+                            type="submit"
+                            fullWidth
+                            variant="outlined"
+                            id = "searchButton"
+                            disabled={searchButtonDisabled}
+                            sx={{ mt: 3, mb: 2 }}
+                            >
+                                Search
+                            </Button>
+                        </Box>
+                        </Box>
+                    </Container>
+                    </ThemeProvider>
+                    {/******/}  
+
+
+                    {/*** MUI Template ***/}
+                    <ThemeProvider theme={theme}>
+                    <Container component="main" maxWidth="xs">
+                        <CssBaseline />
+
+                        <Box
+                        sx={{
+                            marginTop: 8,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                        }}
+                        >
+
+                        <Typography component="h1" variant="h5">
+                            Filter SubGreddiits
+                        </Typography>
+
+                        <Box component="form" onSubmit={handleSearch} noValidate sx={{ mt: 1 }}>
+
+                            <Button
+                            type="submit"
+                            fullWidth
+                            variant="outlined"
+                            id = "filterButton"
+                            sx={{ mt: 3, mb: 2 }}
+                            >
+                                Filter
+                            </Button>
+                        </Box>
+                        </Box>
+                    </Container>
+                    </ThemeProvider>
+                    {/******/} 
+
+                    {/*** MUI Template ***/}
+                    <ThemeProvider theme={theme}>
+                    <Container component="main" maxWidth="xs">
+                        <CssBaseline />
+
+                        <Box
+                        sx={{
+                            marginTop: 8,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                        }}
+                        >
+
+                        <Typography component="h1" variant="h5">
+                            Sort SubGreddiits
+                        </Typography>
+
+                        <Box component="form" onSubmit={handleSearch} noValidate sx={{ mt: 1 }}>
+
+                            <Button
+                            type="submit"
+                            fullWidth
+                            variant="outlined"
+                            id = "searchButton"
+                            sx={{ mt: 3, mb: 2 }}
+                            >
+                                Sort
+                            </Button>
+                        </Box>
+                        </Box>
+                    </Container>
+                    </ThemeProvider>
+                    {/******/} 
 
             <div className="horizontal-line">
                 
