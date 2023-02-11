@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import * as React from 'react';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useNavigate } from 'react-router-dom';
-import { Tooltip } from '@mui/material';
+import { Icon, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -15,6 +15,8 @@ import Box from '@mui/material/Box';
 import FuzzySearch from 'fuzzy-search';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import CancelIcon from '@mui/icons-material/Cancel';
+import IconButton from '@mui/material/IconButton';
 
 const AllPages = () => {
     const navigate = useNavigate();
@@ -87,9 +89,20 @@ const AllPages = () => {
     const renderPages = () => {
         if (currentSUbgreddiitList.length > 0){
             var returnval = [];
-
         
             currentSUbgreddiitList.forEach(entry => {
+
+                const isLeaveDisabled = 
+                    entry.moderatorEmail === user.email
+                    || !entry.userEmails.includes(user.email)
+                ;
+
+                const isJoinDisabled =
+                    user.email === entry.moderatorEmail
+                    || entry.userEmails.includes(user.email)
+                    || entry.blockedUserEmails.includes(user.email)
+                ; 
+
                 returnval.push(
                     <div className="subgreddiit-pane">
                         <p>
@@ -119,19 +132,46 @@ const AllPages = () => {
                             <span style={{fontWeight:'bold'}}>Moderator Email: </span>
                             {entry.moderatorEmail}
                         </p>
+
+                        {entry.blockedUserEmails.includes(user.email) ? 
+                         "Sorry, you have been banned from this SubGreddit"
+                         :""}
                         
                         <p>                            
                             <Tooltip title="Open SubGreddiit"> 
+                            <IconButton 
+                                disabled={entry.blockedUserEmails.includes(user.email)}
+                                style={{borderRadius: 0}}
+                                onClick={openPage(entry.name)}
+                            >
                                 <OpenInNewIcon className='openIcon' 
                                     sx={{fontSize: 30, mx: '100px'}}
-                                    onClick={openPage(entry.name)}/>
+                                    />
+                            </IconButton>
+                            </Tooltip>
+
+                            <Tooltip title="Leave SubGreddiit"> 
+                            <IconButton 
+                                disabled={isLeaveDisabled}
+                                style={{borderRadius: 0}}
+                                onClick={leavePage(entry.name)}
+                            >
+                                <CancelIcon className='deleteIcon' 
+                                    sx={{fontSize: 30, mx: '100px'}}
+                                    />
+                            </IconButton>
                             </Tooltip>
 
                             <Tooltip title="Join Subgreddiit"> 
+                            <IconButton 
+                                disabled={isJoinDisabled}
+                                style={{borderRadius: 0}}
+                                onClick={joinPage(entry.name)}
+                            >
                                 <AddIcon className='openIcon' 
                                     sx={{fontSize: 30, mx: '100px'}}
-                                    onClick={user.email === entry.moderatorEmail ? null: joinPage(entry.name)}
                                     />
+                            </IconButton>
                             </Tooltip>
                         </p>
                     </div>
@@ -158,6 +198,33 @@ const AllPages = () => {
             navigate(`/subgreddiit/${name}`);
         };
     };
+
+    const leavePage = (name) => {
+        return async function() {
+            console.log(name);
+
+            fetch(`http://localhost:5000/block-user-subgreddiit/${name}/${user.email}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                'Content-Type': 'application/json'
+                }, 
+                body: null
+            })
+            .then((result) => {
+                const returnedStatus = result.status;
+            
+                console.log(`Returned status for leaving: ${returnedStatus}`);
+
+                setChangeArray(curState => !curState);
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+
+            setChangeArray(curState => !curState);
+        }
+    }
 
     // joining a page
     const joinPage = (name) =>{
@@ -305,17 +372,6 @@ const AllPages = () => {
 
         setChangeArray(curState => !curState)
     }
-
-    // const handleSearchandFilter = (event) => {
-    //     event.preventDefault();
-    //     handleSearch(event);
-    //     setTimeout(
-    //         function() {
-    //             handleFilter(event)
-    //         }.bind(this)
-    //         , 1000
-    //     );
-    // }
 
     const [curSortingCriteria, setCurSortingCriteria] = React.useState([]);
     const handleSortingCriteria = (event, newCriteria) => {

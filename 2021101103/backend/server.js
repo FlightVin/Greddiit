@@ -576,7 +576,44 @@ app.post('/reject-user-subgreddiit/:name/:email', async (req, res) => {
   }
 });
 
-// creating post
+// Banning/blocking a user from a page
+app.post('/block-user-subgreddiit/:name/:email', async (req, res) => {
+  try{
+    const name = req.params['name'];
+    const email = req.params['email'];
+
+    console.log(name, email);
+
+    const existingPage = await Subgreddiit.findOne(
+      {name: name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()}
+    );
+
+    if (!existingPage){
+      return res.status(400).send("Doesn't exist");
+    }
+
+    if (existingPage.blockedUserEmails.includes(email)){
+      return res.status(409).send("Already Added");
+    }
+
+    const return_page = await Subgreddiit.findOneAndUpdate({name},{
+      userEmails: existingPage.userEmails
+          .filter(entry => entry != email),
+      blockedUserEmails: [...existingPage.blockedUserEmails, email] 
+    }, {
+      new: true
+    });
+
+    if (!return_page){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(200).send("User exists");
+
+  } catch(err){
+    console.log(err);
+  }
+});
 
 // server
 const server = http.createServer(app);
