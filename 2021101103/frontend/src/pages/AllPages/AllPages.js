@@ -69,6 +69,7 @@ const AllPages = () => {
                                     }
                                 ]) 
                             })
+                            console.log('Rendering');
                         })
                         .catch((err) => {
                             console.log(err);
@@ -80,13 +81,12 @@ const AllPages = () => {
             })
         }
 
-        console.log('Rendering');
-
         initRender();
     }, [currentSUbgreddiitList, changeArray, user.email]);
 
     // rendering subgreddiits
     const renderPages = () => {
+        console.log("Called renderPages()");
         if (currentSUbgreddiitList.length > 0){
             var returnval = [];
         
@@ -201,6 +201,9 @@ const AllPages = () => {
 
     const leavePage = (name) => {
         return async function() {
+            if (!window.confirm("Are you sure you want to leave? You won't be able to join again")){
+                return;
+            }
             console.log(name);
 
             fetch(`http://localhost:5000/block-user-subgreddiit/${name}/${user.email}`, {
@@ -217,12 +220,11 @@ const AllPages = () => {
                 console.log(`Returned status for leaving: ${returnedStatus}`);
 
                 setChangeArray(curState => !curState);
+                window.location.reload();
             })
             .catch((err) => {
                 console.log(err);
             })
-
-            setChangeArray(curState => !curState);
         }
     }
 

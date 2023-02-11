@@ -12,6 +12,12 @@ const postSchema = new mongoose.Schema({
   },
   comments: {
     type: Array
+  },
+  upvotes: {
+    type: Number
+  },
+  downvotes: {
+    type: Number
   }
 });
 

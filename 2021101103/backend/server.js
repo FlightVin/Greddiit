@@ -9,7 +9,7 @@ const tokenKey = require("./secret/token");
 const User = require('./models/User');
 const Follower = require('./models/Follower');
 const Subgreddiit = require('./models/Subgreddiit');
-const Post = require('./models/Post');
+const Post = require('./models/Post').default;
 const {mongoConnect, DB_URI} = require('./database/mongo');
 
 const app = express();

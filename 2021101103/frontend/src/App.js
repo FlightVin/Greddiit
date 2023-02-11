@@ -10,6 +10,7 @@ import AllPages from './pages/AllPages/AllPages';
 import JoinRequests from './pages/JoinRequests/JoinRequests';
 import { SubgreddiitCheck, MySubgreddiitCheck} from './pages/SubgreddiitCheck/SubgreddiitCheck';
 import SubGreddiitUsers from './pages/SubgreddiitUsers/SubgreddiitUsers';
+import SubgreddiitPage from './pages/SubgreddiitPage/SubgreddiitPage';
 
 function App() {
   return (
@@ -79,6 +80,7 @@ function App() {
         <Protected>
           <SubgreddiitCheck>
             <Dashboard />
+            <SubgreddiitPage />
           </SubgreddiitCheck>
         </Protected>
       } />

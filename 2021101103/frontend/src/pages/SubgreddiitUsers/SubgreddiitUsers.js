@@ -46,7 +46,7 @@ const SubGreddiitUsers = () => {
         }
 
         initRender();
-    }, [user.email]);
+    }, [user.email, name]);
 
     const renderJoinRequests = () => {
         var returnval = [];

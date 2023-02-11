@@ -1,0 +1,23 @@
+.subgreddiit-page{
+    display: flex;
+    justify-content: center; 
+    flex-direction: row;
+    margin-top: 50px;
+}
+
+.subgreddiit-info-pane{
+    width: 30%;
+    margin-left: 50px;
+    margin-right: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.post-pane {
+    width: 60%;
+    margin-left: 30px;
+    margin-right: 50px;
+    justify-content: center;
+}
+
