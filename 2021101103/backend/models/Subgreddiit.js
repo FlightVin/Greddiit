@@ -28,6 +28,9 @@ const subgredditSchema = new mongoose.Schema({
   },
   reportedPostObjectIDs: {
     type: Array
+  },
+  subgreddiitTags: {
+    type: Array
   }
 });
 

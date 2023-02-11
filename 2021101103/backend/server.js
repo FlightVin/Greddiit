@@ -337,7 +337,8 @@ app.post('/create-subgreddiit', async (req, res) => {
       name, 
       moderatorEmail,
       description,
-      bannedWords
+      bannedWords,
+      subgreddiitTags
     } = req.body;
 
     const existingPage = await Subgreddiit.findOne(
@@ -353,7 +354,8 @@ app.post('/create-subgreddiit', async (req, res) => {
       moderatorEmail,
       userEmails: [moderatorEmail],
       description,
-      bannedWords:  bannedWords.split(',')
+      bannedWords:  bannedWords.split(','),
+      subgreddiitTags: subgreddiitTags.split(',')
     });
 
     if (!return_page){

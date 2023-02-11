@@ -60,7 +60,8 @@ const MyPages = () => {
                                         entry.bannedWords.join(', '),
                                     description: entry.description,
                                     joinRequestEmails: entry.joinRequestEmails,
-                                    reportedPostObjectIDs: entry.reportedPostObjectIDs
+                                    reportedPostObjectIDs: entry.reportedPostObjectIDs,
+                                    subgreddiitTags: entry.subgreddiitTags.join(', ')
                                 }
                             ])  
                             })
@@ -94,7 +95,8 @@ const MyPages = () => {
           name: data.get('pageCreationName'),
           moderatorEmail: user.email,
           description: data.get('pageCreationDescription'),
-          bannedWords: data.get('pageCreationBannedKeywords')
+          bannedWords: data.get('pageCreationBannedKeywords').toLowerCase(),
+          subgreddiitTags: data.get('pageCreationTags').toLocaleLowerCase()
         };
 
         const JSONData = JSON.stringify(submittedData);
@@ -176,6 +178,9 @@ const MyPages = () => {
                         <h3>Banned Words</h3>
                         <p className='para'>{entry.bannedWords.length > 0 ? entry.bannedWords : "No restricted words"}</p>
 
+                        <h3>Tags</h3>
+                        <p className='para'>{entry.subgreddiitTags.length > 0 ? entry.subgreddiitTags : "No restricted words"}</p>
+
                         <p className='para'>
                             <span style={{fontWeight:'bold'}}>Number of posts: </span>
                             {entry.postObjectIDs.length}
@@ -255,9 +260,24 @@ const MyPages = () => {
                 margin="normal"
                 fullWidth
                 id="pageCreationBannedKeywords"
-                label="Banned Keywords (Without spaces around commas)"
+                label="Banned Keywords"
                 name="pageCreationBannedKeywords"
                 onKeyUp={checkPageCreationFields}
+                helperText="Without spaces around commas"
+                inputProps={{
+                    style: {
+                      height: "50px"                    },
+                  }}
+                />
+
+                <TextField
+                margin="normal"
+                fullWidth
+                id="pageCreationTags"
+                label="Tags"
+                name="pageCreationTags"
+                onKeyUp={checkPageCreationFields}
+                helperText="Without spaces around commas"
                 inputProps={{
                     style: {
                       height: "50px"                    },

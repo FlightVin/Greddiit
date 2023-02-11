@@ -59,10 +59,11 @@ const AllPages = () => {
                                         blockedUserEmails: entry.blockedUserEmails,
                                         postObjectIDs: entry.postObjectIDs,
                                         bannedWords:
-                                            entry.bannedWords.join(', '),
+                                            entry.bannedWords,
                                         description: entry.description,
                                         joinRequestEmails: entry.joinRequestEmails,
-                                        reportedPostObjectIDs: entry.reportedPostObjectIDs
+                                        reportedPostObjectIDs: entry.reportedPostObjectIDs,
+                                        subgreddiitTags: entry.subgreddiitTags
                                     }
                                 ]) 
                             })
@@ -99,7 +100,10 @@ const AllPages = () => {
                         <p className='para'>{entry.description}</p>
 
                         <h3>Banned Words</h3>
-                        <p className='para'>{entry.bannedWords.length > 0 ? entry.bannedWords : "No restricted words"}</p>
+                        <p className='para'>{entry.bannedWords.join(', ').length > 0 ? entry.bannedWords.join(', ') : "No restricted words"}</p>
+
+                        <h3>Tags</h3>
+                        <p className='para'>{entry.subgreddiitTags.join(', ').length > 0 ? entry.subgreddiitTags.join(', ') : "No tags"}</p>
 
                         <p className='para'>
                             <span style={{fontWeight:'bold'}}>Number of posts: </span>
@@ -195,28 +199,62 @@ const AllPages = () => {
                 caseSensitive: false,
             });
 
-            const result = searcher.search(fuzzyKeyword);
+            const result = searcher.search(fuzzyKeyword).sort(
+                (entry1, entry2) => {
+                    const in1 = entry1.userEmails.includes(user.email);
+                    const in2 = entry2.userEmails.includes(user.email);
+
+                    if (in1 && !in2){
+                        return -1;
+                    }
+
+                    if (!in1 && in2){
+                        return 1;
+                    }
+
+                    return 0;
+                }
+            );
             setCurrentSubgreddiitList(result);
         } else {
             console.log(`Normal Search on ${submittedKeyword}`);
 
             setCurrentSubgreddiitList(subgreddiitList.filter(
                 entry => entry.name.toLowerCase().includes(submittedKeyword)
+            ).sort(
+                (entry1, entry2) => {
+                    const in1 = entry1.userEmails.includes(user.email);
+                    const in2 = entry2.userEmails.includes(user.email);
+
+                    if (in1 && !in2){
+                        return -1;
+                    }
+
+                    if (!in1 && in2){
+                        return 1;
+                    }
+
+                    return 0;
+                }
             ));
         }
+
+        setChangeArray(curState => !curState);
     }
 
     const handleFilter = (event) => {
         event.preventDefault();
 
-        console.log("FIlter called");  
+        console.log("Filter called");  
         
         const data = new FormData(event.currentTarget);
         const submittedFilters = {
             filterMinPostNumber: data.get('filterMinimumPosts'),
             filterMaxPostNumber: data.get('filterMaximumPosts'),
             filterMinUserNumber: data.get('filterMinimumUsers'),
-            filterMaxUserNumber: data.get('filterMaximumUsers')
+            filterMaxUserNumber: data.get('filterMaximumUsers'),
+            filterTags: data.get('filterTags').toLowerCase().length > 0 ? 
+                data.get('filterTags').toLowerCase().split(',') : []
         }
 
         if (submittedFilters.filterMinPostNumber === ''){
@@ -247,22 +285,37 @@ const AllPages = () => {
                 Number(submittedFilters.filterMaxUserNumber);
         }
 
-        console.log(submittedFilters);
+        console.log(submittedFilters.filterTags);
 
-        setCurrentSubgreddiitList(subgreddiitList.filter(
-            entry => 
-                entry.userEmails.length >= submittedFilters.filterMinUserNumber
+        setCurrentSubgreddiitList(currentSUbgreddiitList.filter(
+            entry => {
+                const taggedWordResult = 
+                    submittedFilters.filterTags.every(
+                        val => 
+                            entry.subgreddiitTags.includes(val)
+                    );
+
+                return entry.userEmails.length >= submittedFilters.filterMinUserNumber
                 && entry.userEmails.length <= submittedFilters.filterMaxUserNumber
                 && entry.postObjectIDs.length >= submittedFilters.filterMinPostNumber
                 && entry.postObjectIDs.length <= submittedFilters.filterMaxPostNumber
+                && (taggedWordResult);
+            }
         ));
+
+        setChangeArray(curState => !curState)
     }
 
-    const handleSearchandFilter = (event) => {
-        event.preventDefault();
-        handleSearch(event);
-        handleFilter(event);
-    }
+    // const handleSearchandFilter = (event) => {
+    //     event.preventDefault();
+    //     handleSearch(event);
+    //     setTimeout(
+    //         function() {
+    //             handleFilter(event)
+    //         }.bind(this)
+    //         , 1000
+    //     );
+    // }
 
     const [curSortingCriteria, setCurSortingCriteria] = React.useState([]);
     const handleSortingCriteria = (event, newCriteria) => {
@@ -382,7 +435,7 @@ const AllPages = () => {
                         >
 
 
-                        <Box component="form" onSubmit={handleSearchandFilter} noValidate sx={{ mt: 1 }}>
+                        <Box component="form" onSubmit={handleSearch} noValidate sx={{ mt: 1 }}>
                             <Typography component="h1" variant="h5"
                             sx={{
                                 display:"flex",
@@ -400,6 +453,19 @@ const AllPages = () => {
                             name="searchKeyword"
                             helperText="Start with ~ for fuzzy search"
                             />
+
+                            <Button
+                            type="submit"
+                            fullWidth
+                            variant="outlined"
+                            id = "searchButton"
+                            sx={{ mt: 3, mb: 2 }}
+                            >
+                                Search
+                            </Button>
+
+                            </Box>
+                            <Box component="form" onSubmit={handleFilter} noValidate sx={{ mt: 1 }}>
                             
                             <div className="filter-pane">
                             <TextField
@@ -439,6 +505,16 @@ const AllPages = () => {
                             />
                             </div>
 
+                            
+                            <TextField
+                            margin="normal"
+                            fullWidth
+                            id="filterTags"
+                            label="SubGreddiit Tags"
+                            name="filterTags"
+                            helperText="Without spaces"
+                            />
+
                             <Typography component="h1"
                             sx={{
                                 display:"flex",
@@ -454,7 +530,7 @@ const AllPages = () => {
                             id = "filterButton"
                             sx={{ mt: 3, mb: 2 }}
                             >
-                                Search and Filter
+                                Filter searched data
                             </Button>
 
                         </Box>
@@ -502,7 +578,7 @@ const AllPages = () => {
                             id = "sortButton"
                             sx={{ mt: 3, mb: 2 }}
                             >
-                                Sort
+                                Sort filtered data
                             </Button>
                         </Box>
                         </Box>
