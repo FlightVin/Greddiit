@@ -11,6 +11,7 @@ import JoinRequests from './pages/JoinRequests/JoinRequests';
 import { SubgreddiitCheck, MySubgreddiitCheck} from './pages/SubgreddiitCheck/SubgreddiitCheck';
 import SubGreddiitUsers from './pages/SubgreddiitUsers/SubgreddiitUsers';
 import SubgreddiitPage from './pages/SubgreddiitPage/SubgreddiitPage';
+import SavedPosts from './pages/SavedPosts/SavedPosts';
 
 function App() {
   return (
@@ -52,6 +53,12 @@ function App() {
         </Protected>
       } />
 
+      <Route path="/savedposts" element={
+        <Protected>
+          <Dashboard />
+          <SavedPosts />
+        </Protected>
+      } />
 
       <Route path="/mysubgreddiit/:name/users" element={
         <Protected>

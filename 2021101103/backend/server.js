@@ -624,8 +624,10 @@ app.post('/create-post', async (req, res) => {
       text,
     } = req.body;
 
+    console.log(subgreddiitName, posterEmail, text);
+
     const existingPage = await Subgreddiit.findOne({
-      subgreddiitName
+      name: subgreddiitName
     })
 
     if (!existingPage){
@@ -646,8 +648,10 @@ app.post('/create-post', async (req, res) => {
       return res.status(500).send("Could not access database! Internal Server Error");
     }
 
+    console.log(return_post._id, existingPage.postObjectIDs, existingPage.name);
+
     const return_page = await Subgreddiit.findOneAndUpdate(
-        {subgreddiitName},
+        {name: existingPage.name},
         {
           postObjectIDs: [...existingPage.postObjectIDs, return_post._id]
         }
@@ -656,6 +660,8 @@ app.post('/create-post', async (req, res) => {
     if (!return_page){
       return res.status(500).send("Could not access database! Internal Server Error");
     }
+
+    console.log("Updated page details for new post");
 
     return res.status(201).send("created");
 
@@ -866,6 +872,24 @@ app.post('/toggle-follower/:followerEmail/:followingEmail', async (req, res) => 
   } catch(err){
     console.log(err);
     return res.status(400).send("Couldn't create follower entry");
+  }
+});
+
+// returning saved posts
+app.post('/access-saved-posts/:email', async (req, res) => {
+  try{
+    const email = req.params['email'];
+    console.log(email);
+
+    const posts = await Post.find({
+      savedBy: email
+    });
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify(posts));
+
+  } catch(err){
+    console.log(err);
   }
 });
 
