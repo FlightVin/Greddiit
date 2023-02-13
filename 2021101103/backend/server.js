@@ -826,6 +826,49 @@ app.post('/toggle-save/:id/:email', async (req, res) => {
   }
 });
 
+// toggling follower entry
+app.post('/toggle-follower/:followerEmail/:followingEmail', async (req, res) => {
+  try{
+    const following_email = req.params['followingEmail'];
+    const follower_email = req.params['followerEmail'];
+
+    console.log(follower_email, following_email);
+
+    const existing_data = await Follower.findOne({
+      followerEmail: follower_email,
+      followingEmail: following_email
+    });
+
+    if (existing_data){
+      const returned_data = await Follower.findOneAndDelete({
+        followerEmail: follower_email,
+        followingEmail: following_email
+      });
+      
+      if (!returned_data){
+        return res.status(500).send("Could not access database! Internal Server Error");
+      }
+      
+      return res.status(200).send(returned_data);
+    } else {
+      const returned_data = await Follower.create({
+        followerEmail: follower_email,
+        followingEmail: following_email
+      });
+      
+      if (!returned_data){
+        return res.status(500).send("Could not access database! Internal Server Error");
+      }
+
+      return res.status(200).send(returned_data);
+    }
+
+  } catch(err){
+    console.log(err);
+    return res.status(400).send("Couldn't create follower entry");
+  }
+});
+
 // server
 const server = http.createServer(app);
 server.listen(port, () => {

@@ -441,19 +441,43 @@ const SubgreddiitPage = () => {
         }
     }
 
-    const followFunction = (email) => {
+    const followFunction = (curEmail) => {
         return async function() {
-            console.log(email);
+            console.log(curEmail);
 
-            if (followingArray.includes(email)){
+            if (followingArray.includes(curEmail)){
                 setFollowingArray(curArray => curArray.filter(
-                    ele => ele!==email
+                    ele => ele!==curEmail
                 ));
             } else {
-                setFollowingArray(curArray => [...curArray, email]);
-
-                
+                setFollowingArray(curArray => [...curArray, curEmail]);                
             }
+
+            fetch(`http://localhost:5000/toggle-follower/${user.email}/${curEmail}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                  'Content-Type': 'application/json'
+                }, 
+                body: null
+              })
+              .then((result) => {
+                  console.log(result);
+      
+                  const returnedStatus = result.status;
+            
+                  console.log(returnedStatus);
+      
+                  if (returnedStatus === 200){
+                      console.log("follow processed");
+                  } else {
+                      alert("Error: Reload page and try again");
+                  }
+      
+              })
+              .catch((err) => {
+                  console.log(`Couldn't sign up with error ${err}`);
+              })
         }
     }
 
