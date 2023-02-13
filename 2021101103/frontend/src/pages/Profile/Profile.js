@@ -488,7 +488,7 @@ const Profile = () => {
 
 
                         <Typography component="h1" variant="h5">
-                            Add Follower
+                            Follow someone
                         </Typography>
 
                         <Box component="form" onSubmit={handleFollowingAddition} noValidate sx={{ mt: 1 }}>

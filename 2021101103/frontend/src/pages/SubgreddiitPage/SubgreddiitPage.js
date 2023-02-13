@@ -10,6 +10,14 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
 
 const SubgreddiitPage = () => {
     const {name} = useParams();
@@ -17,6 +25,13 @@ const SubgreddiitPage = () => {
     const [curPage, setCurPage] = React.useState();
     const [isLoading, setLoading] = React.useState(true);
     const theme = createTheme();
+    const [postList, setPostList] = React.useState([]);
+    const [changeArray, setChangeArray] = React.useState(true);
+    const [arePostsRendered, setArePostsRendered] = React.useState(false);
+    const [upvoteArray, setUpvoteArray] = React.useState();
+    const [downvoteArray, setDownvoteArray] = React.useState();
+    const [savedByArray, setSavedByArray] = React.useState();
+    const [followingArray, setFollowingArray] = React.useState();
 
     useEffect(() => {
         document.title = `Greddiit | ${name}`;
@@ -24,6 +39,7 @@ const SubgreddiitPage = () => {
 
     useEffect(() => {
         // getting initial data
+        setArePostsRendered(false);
         setTimeout(() => {
             const initRender = async () => {
                 fetch(`http://localhost:5000/subgreddiit-exists/${name}`, {
@@ -35,6 +51,40 @@ const SubgreddiitPage = () => {
                     body: null
                 })
                 .then((result) => {
+
+                    // first getting following array
+                    fetch(`http://localhost:5000/access-followers/${user.email}`, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        }, 
+                        body: null
+                    })
+                    .then((result) => {
+                        const returnedStatus = result.status;
+        
+                        if (returnedStatus === 200){
+                
+                            result.json()
+                                .then((body) => {
+                                    console.log(body);
+
+                                    setFollowingArray([]);
+                                    body.following.forEach(entry => {
+                                        setFollowingArray(oldArray => [...oldArray, entry.followingEmail]);
+                                    });  
+                                    
+                                })
+                                .catch((err) => {
+                                    console.log(err);
+                                });
+                
+                        } else {
+                            console.log("Initial fetch failed");
+                        }
+                    })
+
                     const returnedStatus = result.status;
     
                     if (returnedStatus === 200){
@@ -43,6 +93,81 @@ const SubgreddiitPage = () => {
                             .then((body) => {
                                 console.log(body);
                                 setCurPage(body);
+
+                                var resultArray = [];
+                                var curUpvoteArray = [];
+                                var curDownvoteArray = [];
+                                var curSavedByArray = [];
+
+                                body.postObjectIDs
+                                    .forEach(
+                                        postID =>{
+                                            
+                                            fetch(`http://localhost:5000/access-post/${postID}`, {
+                                                method: 'POST',
+                                                mode: 'cors',
+                                                headers: {
+                                                  'Content-Type': 'application/json'
+                                                }, 
+                                                body: null
+                                            })
+                                            .then((postResult) => {
+                                                const postStatus = postResult.status;
+
+                                                if (postStatus === 200){
+                                                    postResult.json()
+                                                        .then(postBody => {
+                                                            postBody.creationTimestamp = 
+                                                                postID.toString().substring(0,8);
+
+                                                            postBody.isUpvoted = 
+                                                                postBody[0].upvotedBy.includes
+                                                                    (user.email);
+
+                                                            postBody.isSaved = 
+                                                                postBody[0].savedBy.includes
+                                                                    (user.email);
+
+                                                            postBody.isDownvoted = 
+                                                                postBody[0].downvotedBy.includes
+                                                                    (user.email);
+
+                                                            postBody.upvoteCount = 
+                                                                postBody[0].upvotedBy.length - postBody.isUpvoted;
+
+                                                            postBody.downvoteCount = 
+                                                                postBody[0].downvotedBy.length - postBody.isDownvoted;
+
+                                                            if (postBody.isUpvoted)
+                                                            {
+                                                                curUpvoteArray.push(postID)
+                                                            }
+
+                                                            if (postBody.isDownvoted)
+                                                            {
+                                                                curDownvoteArray.push(postID);
+                                                            }
+
+                                                            if (postBody.isSaved){
+                                                                curSavedByArray.push(postID);
+                                                            }
+
+                                                            resultArray.push(
+                                                                postBody
+                                                            );
+                                                        })
+                                                }
+                                            })
+
+                                        }
+                                    )
+                                
+                                setDownvoteArray(curDownvoteArray);
+                                setSavedByArray(curSavedByArray);
+                                setUpvoteArray(curUpvoteArray);
+                                setPostList(resultArray);
+
+                                console.log("Loaded page");
                                 setLoading(false);
                             })
                             .catch((err) => {
@@ -57,16 +182,35 @@ const SubgreddiitPage = () => {
 
             initRender();
         }, 1000);
-    }, [user.email, name]);
+    }, [changeArray, user.email, name]);
 
     const [renderPostForm, setRenderPostForm] = React.useState(false);
     const [postCreationButtonDisabled, setPostCreationButtonDisabled]
         = React.useState(true);
+    const [createPostHelperText,setCreatePageHelperText]
+        = React.useState('');
 
     if (isLoading) {
         return (
             <Loading />
         );
+    }
+
+    const dateSort = (entry1, entry2) => {
+        const date1 = new Date( parseInt( 
+            entry1.creationTimestamp, 16 ) * 1000 );
+        const date2 = new Date( parseInt( 
+            entry2.creationTimestamp, 16 ) * 1000 );
+
+        if (date1 < date2){
+            return 1;
+        }
+
+        if (date1 > date2){
+            return -1;
+        }
+
+        return 0;
     }
 
     const toggleCreatePost = () => {
@@ -78,17 +222,92 @@ const SubgreddiitPage = () => {
         setRenderPostForm(curState => !curState);
     }
 
+    const toggleShowPosts = () => {
+        setArePostsRendered(curState => !curState);
+    }
+
     const handlePostCreation = (event) => {
         event.preventDefault();
+    
+        if (!curPage.userEmails.includes(user.email)){
+            alert("You must be a member to do this!");
+            return;
+        }
 
-        console.log("Creating post");
+        setPostCreationButtonDisabled(true);
+        setCreatePageHelperText("Creation in progress");
+
+        const data = new FormData(event.currentTarget);
+        const submittedData = {
+          text: data.get('postText'),
+          subgreddiitName: name,
+          posterEmail: user.email,
+        };
+
+        const JSONData = JSON.stringify(submittedData);
+
+        fetch('http://localhost:5000/create-post', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+              'Content-Type': 'application/json'
+            }, 
+            body: JSONData
+          })
+          .then((result) => {
+              console.log(result);
+  
+              const returnedStatus = result.status;
+        
+              console.log(returnedStatus);
+  
+              if (returnedStatus === 201){
+                  setCreatePageHelperText("Post created!");
+              } else if (returnedStatus === 409){
+                  setCreatePageHelperText("Post already exists!");
+              } else {
+                  setCreatePageHelperText("Error: Reload page and try again");
+              }
+  
+              setPostCreationButtonDisabled(false);
+              setChangeArray(curState => !curState);
+          })
+          .catch((err) => {
+              console.log(`Couldn't sign up with error ${err}`);
+          })
+
+        console.log(submittedData);
+    }
+
+    const checkPostCreationFields = () => {
+        const descLength = 
+            document.getElementById('postText').value.length;
+        
+        if (descLength > 0){
+            setPostCreationButtonDisabled(false);
+        } else {
+            setPostCreationButtonDisabled(true);
+        }
     }
 
     const renderPostFormHTML = () => {
         return (
             <Box component="form" onSubmit={handlePostCreation} noValidate sx={{ mt: 1 }}>
 
-                
+                <TextField
+                margin="normal"
+                fullWidth
+                id="postText"
+                label="Post Text"
+                name="postText"
+                onKeyUp={checkPostCreationFields}
+                required
+                helperText={createPostHelperText}
+                inputProps={{
+                    style: {
+                      height: "50px"                    },
+                  }}
+                />
 
                 <Button
                 type="submit"
@@ -102,6 +321,231 @@ const SubgreddiitPage = () => {
                 </Button>
             </Box>
         );
+    }
+
+
+    const upvoteFunction = (postID) => {
+        return async function() {
+            console.log(postID);
+            if (upvoteArray.includes(postID)){
+                setUpvoteArray(curArray => curArray.filter(
+                    ele => ele!==postID
+                ));
+            } else {
+                setUpvoteArray(curArray => [...curArray, postID]);
+            }
+
+            fetch(`http://localhost:5000/toggle-upvote/${postID}/${user.email}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                  'Content-Type': 'application/json'
+                }, 
+                body: null
+              })
+              .then((result) => {
+                  console.log(result);
+      
+                  const returnedStatus = result.status;
+            
+                  console.log(returnedStatus);
+      
+                  if (returnedStatus === 200){
+                      console.log("upvote processed");
+                  } else {
+                      alert("Error: Reload page and try again");
+                  }
+      
+              })
+              .catch((err) => {
+                  console.log(`Couldn't sign up with error ${err}`);
+              })
+        }
+    }
+
+    const downvoteFunction = (postID) => {
+        return async function() {
+            console.log(postID);
+            if (downvoteArray.includes(postID)){
+                setDownvoteArray(curArray => curArray.filter(
+                    ele => ele!==postID
+                ));
+            } else {
+                setDownvoteArray(curArray => [...curArray, postID]);
+            }
+
+            fetch(`http://localhost:5000/toggle-downvote/${postID}/${user.email}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                  'Content-Type': 'application/json'
+                }, 
+                body: null
+              })
+              .then((result) => {
+                  console.log(result);
+      
+                  const returnedStatus = result.status;
+            
+                  console.log(returnedStatus);
+      
+                  if (returnedStatus === 200){
+                      console.log("downvote processed");
+                  } else {
+                      alert("Error: Reload page and try again");
+                  }
+      
+              })
+              .catch((err) => {
+                  console.log(`Couldn't sign up with error ${err}`);
+              })
+        }
+    }
+
+    const saveFunction = (postID) => {
+        return async function() {
+            console.log(postID);
+            if (savedByArray.includes(postID)){
+                setSavedByArray(curArray => curArray.filter(
+                    ele => ele!==postID
+                ));
+            } else {
+                setSavedByArray(curArray => [...curArray, postID]);
+            }
+
+            fetch(`http://localhost:5000/toggle-save/${postID}/${user.email}`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                  'Content-Type': 'application/json'
+                }, 
+                body: null
+              })
+              .then((result) => {
+                  console.log(result);
+      
+                  const returnedStatus = result.status;
+            
+                  console.log(returnedStatus);
+      
+                  if (returnedStatus === 200){
+                      console.log("save processed");
+                  } else {
+                      alert("Error: Reload page and try again");
+                  }
+      
+              })
+              .catch((err) => {
+                  console.log(`Couldn't sign up with error ${err}`);
+              })
+        }
+    }
+
+    const followFunction = (email) => {
+        return async function() {
+            console.log(email);
+
+            if (followingArray.includes(email)){
+                setFollowingArray(curArray => curArray.filter(
+                    ele => ele!==email
+                ));
+            } else {
+                setFollowingArray(curArray => [...curArray, email]);
+
+                
+            }
+        }
+    }
+
+    const renderPosts = () => {
+        console.log("Rendering posts");
+
+        if (postList?.length > 0){
+
+            postList.sort((entry1, entry2) => dateSort(entry1, entry2));
+
+            var returnval = [];
+            postList?.forEach(entry => {
+
+                const renderUpvoteIcon = () => {
+                    if (upvoteArray?.includes(entry[0]._id)) {
+                        return <ThumbUpIcon onClick={upvoteFunction(entry[0]._id)}></ThumbUpIcon>
+                    } else {
+                        return <ThumbUpOffAltIcon onClick={upvoteFunction(entry[0]._id)}></ThumbUpOffAltIcon>
+                    }
+                }
+
+                const renderDownvoteIcon = () => {
+                    if (downvoteArray?.includes(entry[0]._id)) {
+                        return <ThumbDownIcon onClick={downvoteFunction(entry[0]._id)}></ThumbDownIcon>
+                    } else {
+                        return <ThumbDownOffAltIcon onClick={downvoteFunction(entry[0]._id)}></ThumbDownOffAltIcon>
+                    }
+                }
+
+                const renderSaveIcon = () => {
+                    if (savedByArray?.includes(entry[0]._id)) {
+                        return <BookmarkIcon onClick={saveFunction(entry[0]._id)}></BookmarkIcon>
+                    } else {
+                        return <BookmarkBorderIcon onClick={saveFunction(entry[0]._id)}></BookmarkBorderIcon>
+                    }
+                }
+
+                const renderFollow = () => {
+                    if (entry[0].posterEmail === user.email)
+                        return "";
+
+                    if (!followingArray?.includes(entry[0].posterEmail)) {
+                        return <PersonAddIcon onClick={followFunction(entry[0].posterEmail)}></PersonAddIcon>
+                    } else {
+                        return <PersonAddDisabledIcon onClick={followFunction(entry[0].posterEmail)}></PersonAddDisabledIcon>
+                    }
+                }
+
+                returnval.push(
+                    <div className="single-post-pane">
+
+                        <p>
+                            {entry[0].text}
+                        </p>
+
+                        <div className="horizontal-line-divider">
+
+                        </div>
+
+                        <div className="posted-by-pane">
+                            <div>Posted by: {entry[0].posterEmail}</div>
+                            <div>Upvotes: {entry.upvoteCount + upvoteArray?.includes(entry[0]._id)} </div>
+                            <div>Downvotes: {entry.downvoteCount + downvoteArray?.includes(entry[0]._id)}</div>
+                        </div>
+
+                        <div className="horizontal-line-divider">
+
+                        </div>
+
+                        <div className="icons-pane">
+                            {
+                                renderUpvoteIcon()
+                            }
+                            {
+                                renderDownvoteIcon()
+                            }
+                            {
+                                renderSaveIcon()
+                            }
+                            {
+                                renderFollow()
+                            }
+                        </div>
+
+                    </div>
+                )
+            })
+
+            return returnval;
+        } else {
+            return "No posts";
+        }
     }
 
     return (
@@ -163,6 +607,22 @@ const SubgreddiitPage = () => {
                     </Container>
                     </ThemeProvider>
                     {/******/}
+
+                    <div className="horizontal-pane-line">
+                
+                    </div>
+
+                    <div className="list-posts">
+                        <div className="list-header">
+                        <Typography component="h1" variant="h5" onClick={toggleShowPosts}
+                            id="createPageToggling">
+                            Show Posts
+                        </Typography>
+                        </div>
+                        <div className="post-div">
+                            {arePostsRendered ? renderPosts() : ""}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

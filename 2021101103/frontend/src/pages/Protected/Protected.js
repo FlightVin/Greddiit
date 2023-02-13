@@ -25,38 +25,48 @@ const Protected = ({children}) => {
                 const JSONData = JSON.stringify(tokenObject);
                 console.log(JSONData);
 
-                fetch('http://localhost:5000/auth', {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                      'Content-Type': 'application/json'
-                    }, 
-                    body: JSONData
-                  })
-                  .then((result) => {
-                    const returnedStatus = result.status;
+                try{
+                    fetch('http://localhost:5000/auth', {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                        'Content-Type': 'application/json'
+                        }, 
+                        body: JSONData
+                    })
+                    .then((result) => {
+                        const returnedStatus = result.status;
 
-                    console.log(`Returned status: ${returnedStatus}`);
+                        console.log(`Returned status: ${returnedStatus}`);
 
-                    let emailValid = false;
+                        let emailValid = false;
 
-                    result.json()
-                        .then((body) => {
-                            if (user && user.email && body.email === user.email)
-                                emailValid = true;
+                        if (returnedStatus === 200){
+                            result.json()
+                                .then((body) => {
+                                    if (user && user.email && body.email === user.email)
+                                        emailValid = true;
 
-                            if (returnedStatus === 200 && emailValid){
-                                setIsValid(true);
-                                setLoading(false);
-                            } else {
-                                setIsValid(false);
-                                setLoading(false); 
-                            }
-                        })
-                        .catch((err) => {
-                            console.log(err);
-                        });
-                  });
+                                    if (returnedStatus === 200 && emailValid){
+                                        setIsValid(true);
+                                        setLoading(false);
+                                    } else {
+                                        setIsValid(false);
+                                        setLoading(false); 
+                                    }
+                                })
+                                .catch((err) => {
+                                    console.log(err);
+                                });
+                        } else {
+                            setIsValid(false);
+                            setLoading(false); 
+                        }
+                    });
+                } catch {
+                    setIsValid(false);
+                    setLoading(false);
+                }
             }
         }, 1000);
     }, [userToken, user]);

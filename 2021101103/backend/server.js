@@ -9,7 +9,7 @@ const tokenKey = require("./secret/token");
 const User = require('./models/User');
 const Follower = require('./models/Follower');
 const Subgreddiit = require('./models/Subgreddiit');
-const Post = require('./models/Post').default;
+const Post = require('./models/Post');
 const {mongoConnect, DB_URI} = require('./database/mongo');
 
 const app = express();
@@ -609,6 +609,217 @@ app.post('/block-user-subgreddiit/:name/:email', async (req, res) => {
     }
 
     return res.status(200).send("User exists");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// creating a post
+app.post('/create-post', async (req, res) => {
+  try{
+    const {
+      subgreddiitName, 
+      posterEmail,
+      text,
+    } = req.body;
+
+    const existingPage = await Subgreddiit.findOne({
+      subgreddiitName
+    })
+
+    if (!existingPage){
+      return res.status(400).send("Doesn't exist");
+    }
+
+    const return_post = await Post.create({
+      subgreddiitName: subgreddiitName,
+      posterEmail: posterEmail,
+      text: text,
+      comments: [],
+      upvotedBy: [],
+      downvotedBy: [],
+      savedBy: [],
+    });
+
+    if (!return_post){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    const return_page = await Subgreddiit.findOneAndUpdate(
+        {subgreddiitName},
+        {
+          postObjectIDs: [...existingPage.postObjectIDs, return_post._id]
+        }
+      );    
+
+    if (!return_page){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(201).send("created");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// accessing a post
+app.post('/access-post/:id', async (req, res) => {
+  try{
+    const postID = req.params['id'];
+
+    const returned_post = await Post.find({
+      _id: postID
+    });
+
+    if (!returned_post){
+      return res.status(400).send("No such post");
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify(returned_post));
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// upvoting a post
+app.post('/toggle-upvote/:id/:email', async (req, res) => {
+  try{
+    const postID = req.params['id'];
+    const email = req.params['email'];
+
+    const existingPost = await Post.findOne(
+      {_id: postID}
+    );
+
+    if (!existingPost){
+      return res.status(400).send("Doesn't exist");
+    }
+
+    if (existingPost.upvotedBy.includes(email)){
+      // removing upvote
+      const return_post = await Post.findOneAndUpdate({_id: postID},{
+        upvotedBy: existingPost.upvotedBy.filter(
+          entry => entry != email
+        )
+      }, {
+        new: true
+      });
+  
+      if (!return_post){
+        return res.status(500).send("Could not access database! Internal Server Error");
+      }
+    } else {
+      // adding upvote
+      const return_post = await Post.findOneAndUpdate({_id: postID},{
+        upvotedBy: [...existingPost.upvotedBy, email]
+      }, {
+        new: true
+      });
+  
+      if (!return_post){
+        return res.status(500).send("Could not access database! Internal Server Error");
+      }
+    }
+
+    return res.status(200).send("upvote processed");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// downvoting a post
+app.post('/toggle-downvote/:id/:email', async (req, res) => {
+  try{
+    const postID = req.params['id'];
+    const email = req.params['email'];
+
+    const existingPost = await Post.findOne(
+      {_id: postID}
+    );
+
+    if (!existingPost){
+      return res.status(400).send("Doesn't exist");
+    }
+
+    if (existingPost.downvotedBy.includes(email)){
+      // removing downvote
+      const return_post = await Post.findOneAndUpdate({_id: postID},{
+        downvotedBy: existingPost.downvotedBy.filter(
+          entry => entry != email
+        )
+      }, {
+        new: true
+      });
+  
+      if (!return_post){
+        return res.status(500).send("Could not access database! Internal Server Error");
+      }
+    } else {
+      // adding downvote
+      const return_post = await Post.findOneAndUpdate({_id: postID},{
+        downvotedBy: [...existingPost.downvotedBy, email]
+      }, {
+        new: true
+      });
+  
+      if (!return_post){
+        return res.status(500).send("Could not access database! Internal Server Error");
+      }
+    }
+
+    return res.status(200).send("downvoted processed");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// downvoting a post
+app.post('/toggle-save/:id/:email', async (req, res) => {
+  try{
+    const postID = req.params['id'];
+    const email = req.params['email'];
+
+    const existingPost = await Post.findOne(
+      {_id: postID}
+    );
+
+    if (!existingPost){
+      return res.status(400).send("Doesn't exist");
+    }
+
+    if (existingPost.savedBy.includes(email)){
+      // removing save
+      const return_post = await Post.findOneAndUpdate({_id: postID},{
+        savedBy: existingPost.savedBy.filter(
+          entry => entry != email
+        )
+      }, {
+        new: true
+      });
+  
+      if (!return_post){
+        return res.status(500).send("Could not access database! Internal Server Error");
+      }
+    } else {
+      // adding save
+      const return_post = await Post.findOneAndUpdate({_id: postID},{
+        savedBy: [...existingPost.savedBy, email]
+      }, {
+        new: true
+      });
+  
+      if (!return_post){
+        return res.status(500).send("Could not access database! Internal Server Error");
+      }
+    }
+
+    return res.status(200).send("downvoted processed");
 
   } catch(err){
     console.log(err);

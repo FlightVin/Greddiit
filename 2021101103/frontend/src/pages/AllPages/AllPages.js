@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import * as React from 'react';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useNavigate } from 'react-router-dom';
-import { Icon, Tooltip } from '@mui/material';
+import { Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';

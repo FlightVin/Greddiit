@@ -13,11 +13,14 @@ const postSchema = new mongoose.Schema({
   comments: {
     type: Array
   },
-  upvotes: {
-    type: Number
+  upvotedBy: {
+    type: Array
   },
-  downvotes: {
-    type: Number
+  downvotedBy: {
+    type: Array
+  },
+  savedBy: {
+    type: Array
   }
 });
 
