@@ -408,9 +408,23 @@ app.delete('/delete-subgreddiit/:name', async (req, res) => {
 
     console.log(name);
 
+    // deleting posts and comments
+    const returned_data_for_posts = await Post.deleteMany({
+      subgreddiitName: name
+    })
+
+    if (!returned_data_for_posts){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    // deleting page
     const returned_data = await Subgreddiit.findOneAndDelete({
-      name
+      name: name
     });
+
+    if (!returned_data){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
     
     return res.status(200).send(returned_data);
 
