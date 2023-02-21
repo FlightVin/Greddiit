@@ -24,34 +24,27 @@ import { Tooltip } from '@mui/material';
 const SubgreddiitPage = () => {
     const {name} = useParams();
     const user = JSON.parse(localStorage.getItem('grediit-user-details'));
-    const theme = createTheme();
-    // for rendering post creation form
-    const [renderPostForm, setRenderPostForm] = React.useState(false);
-    const [postCreationButtonDisabled, setPostCreationButtonDisabled]
-        = React.useState(true);
-    const [createPostHelperText,setCreatePageHelperText]
-        = React.useState('');
-    // for loading
-    const [isLoading, setLoading] = React.useState(true);
-    // basic page data
     const [curPage, setCurPage] = React.useState();
-    // posts
+    const [isLoading, setLoading] = React.useState(true);
+    const theme = createTheme();
     const [postList, setPostList] = React.useState([]);
-    // data needed in each post
+    const [changeArray, setChangeArray] = React.useState(true);
+    const [arePostsRendered, setArePostsRendered] = React.useState(false);
     const [upvoteArray, setUpvoteArray] = React.useState();
     const [downvoteArray, setDownvoteArray] = React.useState();
     const [savedByArray, setSavedByArray] = React.useState();
     const [followingArray, setFollowingArray] = React.useState();
+    const [commentArray, setCommentArray] = React.useState();
 
     useEffect(() => {
         document.title = `Greddiit | ${name}`;
     }, []);
 
-    // loading all basic data
     useEffect(() => {
+        // getting initial data
+        setArePostsRendered(false);
         setTimeout(() => {
             const initRender = async () => {
-                // fetcing basic data
                 fetch(`http://localhost:5000/subgreddiit-exists/${name}`, {
                     method: 'POST',
                     mode: 'cors',
@@ -62,117 +55,193 @@ const SubgreddiitPage = () => {
                 })
                 .then((result) => {
 
+                    // first getting following array
+                    fetch(`http://localhost:5000/access-followers/${user.email}`, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        }, 
+                        body: null
+                    })
+                    .then((result) => {
+                        const returnedStatus = result.status;
+        
+                        if (returnedStatus === 200){
+                
+                            result.json()
+                                .then((body) => {
+                                    console.log(body);
+
+                                    setFollowingArray([]);
+                                    body.following.forEach(entry => {
+                                        setFollowingArray(oldArray => [...oldArray, entry.followingEmail]);
+                                    });  
+                                    
+                                })
+                                .catch((err) => {
+                                    console.log(err);
+                                });
+                
+                        } else {
+                            console.log("Initial fetch failed");
+                        }
+                    })
+
+                    // getting all comments
+                    fetch(`http://localhost:5000/all-posts/${name}`, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        }, 
+                        body: null
+                    })
+                    .then((result) => {
+                        const returnedStatus = result.status;
+        
+                        if (returnedStatus === 200){
+                
+                            result.json()
+                                .then((body) => {
+                                    console.log(body);
+                                    setCommentArray(body);                                    
+                                })
+                                .catch((err) => {
+                                    console.log(err);
+                                });
+                
+                        } else {
+                            console.log("Initial fetch failed");
+                        }
+                    })
+
                     const returnedStatus = result.status;
+
                     if (returnedStatus === 200){
+            
                         result.json()
-                        .then((body) => {
+                            .then((body) => {
+                                console.log(body);
+                                setCurPage(body);
 
-                            console.log(body);
-                            setCurPage(body);
+                                var resultArray = [];
+                                var curUpvoteArray = [];
+                                var curDownvoteArray = [];
+                                var curSavedByArray = [];
 
-                            // getting posts
-                            var resultArray = [];
-                            var curUpvoteArray = [];
-                            var curDownvoteArray = [];
-                            var curSavedByArray = [];
+                                body.postObjectIDs
+                                    .forEach(
+                                        postID =>{
+                                            
+                                            fetch(`http://localhost:5000/access-post/${postID}`, {
+                                                method: 'POST',
+                                                mode: 'cors',
+                                                headers: {
+                                                  'Content-Type': 'application/json'
+                                                }, 
+                                                body: null
+                                            })
+                                            .then((postResult) => {
+                                                const postStatus = postResult.status;
 
-                            body.postObjectIDs
-                                .forEach(
-                                    postID =>{
-                                        
-                                        fetch(`http://localhost:5000/access-post/${postID}`, {
-                                            method: 'POST',
-                                            mode: 'cors',
-                                            headers: {
-                                              'Content-Type': 'application/json'
-                                            }, 
-                                            body: null
-                                        })
-                                        .then((postResult) => {
-                                            const postStatus = postResult.status;
+                                                if (postStatus === 200){
+                                                    postResult.json()
+                                                        .then(postBody => {
+                                                            postBody.creationTimestamp = 
+                                                                postID.toString().substring(0,8);
 
-                                            if (postStatus === 200){
-                                                postResult.json()
-                                                    .then(postBody => {
-                                                        console.log(postBody);
-                                                        postBody.creationTimestamp = 
-                                                            postID.toString().substring(0,8);
+                                                            postBody.isUpvoted = 
+                                                                postBody[0].upvotedBy.includes
+                                                                    (user.email);
 
-                                                        postBody.isUpvoted = 
-                                                            postBody[0].upvotedBy.includes
-                                                                (user.email);
+                                                            postBody.isSaved = 
+                                                                postBody[0].savedBy.includes
+                                                                    (user.email);
 
-                                                        postBody.isSaved = 
-                                                            postBody[0].savedBy.includes
-                                                                (user.email);
+                                                            postBody.isDownvoted = 
+                                                                postBody[0].downvotedBy.includes
+                                                                    (user.email);
 
-                                                        postBody.isDownvoted = 
-                                                            postBody[0].downvotedBy.includes
-                                                                (user.email);
+                                                            postBody.upvoteCount = 
+                                                                postBody[0].upvotedBy.length - postBody.isUpvoted;
 
-                                                        postBody.upvoteCount = 
-                                                            postBody[0].upvotedBy.length - postBody.isUpvoted;
+                                                            postBody.downvoteCount = 
+                                                                postBody[0].downvotedBy.length - postBody.isDownvoted;
 
-                                                        postBody.downvoteCount = 
-                                                            postBody[0].downvotedBy.length - postBody.isDownvoted;
+                                                            if (postBody.isUpvoted)
+                                                            {
+                                                                curUpvoteArray.push(postID)
+                                                            }
 
-                                                        if (postBody.isUpvoted)
-                                                        {
-                                                            curUpvoteArray.push(postID)
-                                                        }
+                                                            if (postBody.isDownvoted)
+                                                            {
+                                                                curDownvoteArray.push(postID);
+                                                            }
 
-                                                        if (postBody.isDownvoted)
-                                                        {
-                                                            curDownvoteArray.push(postID);
-                                                        }
+                                                            if (postBody.isSaved){
+                                                                curSavedByArray.push(postID);
+                                                            }
 
-                                                        if (postBody.isSaved){
-                                                            curSavedByArray.push(postID);
-                                                        }
+                                                            resultArray.push(
+                                                                postBody
+                                                            );
+                                                        })
+                                                }
+                                            })
 
-                                                        resultArray.push(
-                                                            postBody
-                                                        );
-                                        
-                                                        if (resultArray.length === body.postObjectIDs.length){
-                                                            setDownvoteArray(curDownvoteArray);
-                                                            setSavedByArray(curSavedByArray);
-                                                            setUpvoteArray(curUpvoteArray);
-                                                            setPostList(resultArray);                  
+                                        }
+                                    )
                                 
-                                                            // loaded basic page data
-                                                            console.log("Loaded page");
-                                                            setLoading(false);
-                                                        }
-                                                    })
-                                            }
+                                setDownvoteArray(curDownvoteArray);
+                                setSavedByArray(curSavedByArray);
+                                setUpvoteArray(curUpvoteArray);
+                                setPostList(resultArray);
 
-                                        })
-                                    }
-                                )
-
-                        })
-                        .catch((err) => {
-                            console.log(err);
-                        });
+                                console.log("Loaded page");
+                                setLoading(false);
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                            });
+            
                     } else {
                         console.log("Initial fetch failed");
                     }
-
                 })
-
-            
             }
 
             initRender();
         }, 1000);
-    }, [user.email, name]);
+    }, [changeArray, user.email, name]);
 
-    // loading page
+    const [renderPostForm, setRenderPostForm] = React.useState(false);
+    const [postCreationButtonDisabled, setPostCreationButtonDisabled]
+        = React.useState(true);
+    const [createPostHelperText,setCreatePageHelperText]
+        = React.useState('');
+
     if (isLoading) {
         return (
             <Loading />
         );
+    }
+
+    const dateSort = (entry1, entry2) => {
+        const date1 = new Date( parseInt( 
+            entry1.creationTimestamp, 16 ) * 1000 );
+        const date2 = new Date( parseInt( 
+            entry2.creationTimestamp, 16 ) * 1000 );
+
+        if (date1 < date2){
+            return 1;
+        }
+
+        if (date1 > date2){
+            return -1;
+        }
+
+        return 0;
     }
 
     const toggleCreatePost = () => {
@@ -183,7 +252,11 @@ const SubgreddiitPage = () => {
 
         setRenderPostForm(curState => !curState);
     }
-    
+
+    const toggleShowPosts = () => {
+        setArePostsRendered(curState => !curState);
+    }
+
     const handlePostCreation = (event) => {
         event.preventDefault();
     
@@ -229,12 +302,24 @@ const SubgreddiitPage = () => {
               }
   
               setPostCreationButtonDisabled(false);
+              setChangeArray(curState => !curState);
           })
           .catch((err) => {
               console.log(`Couldn't sign up with error ${err}`);
           })
 
         console.log(submittedData);
+    }
+
+    const checkPostCreationFields = () => {
+        const descLength = 
+            document.getElementById('postText').value.length;
+        
+        if (descLength > 0){
+            setPostCreationButtonDisabled(false);
+        } else {
+            setPostCreationButtonDisabled(true);
+        }
     }
 
     const renderPostFormHTML = () => {
@@ -270,18 +355,7 @@ const SubgreddiitPage = () => {
         );
     }
 
-    const checkPostCreationFields = () => {
-        const descLength = 
-            document.getElementById('postText').value.length;
-        
-        if (descLength > 0){
-            setPostCreationButtonDisabled(false);
-        } else {
-            setPostCreationButtonDisabled(true);
-        }
-    }
 
-    // functions used in posts
     const upvoteFunction = (postID) => {
         return async function() {
             if (!curPage.userEmails.includes(user.email)){
@@ -461,33 +535,93 @@ const SubgreddiitPage = () => {
 
     const addCommentFunction = (parentID) => {
         return async function() {
-            console.log("Adding comment");
+            if (!curPage.userEmails.includes(user.email)){
+                alert("You must be a member to do this!");
+                return;
+            }
+
+            console.log("Adding comment for", parentID);
+
+            const commentText = window.prompt("Enter comment text:");
+            
+            if (!commentText){
+                console.log("Adding comment cancelled");
+                return;
+            } else if (commentText === ''){
+                window.alert("Comment cannot be empty");
+                return;
+            } else {
+                console.log(commentText);
+
+                const submittedData = {
+                    text: commentText,
+                    subgreddiitName: name,
+                    posterEmail: user.email,
+                    parentID: parentID
+                  };
+          
+                  const JSONData = JSON.stringify(submittedData);
+          
+                  fetch('http://localhost:5000/create-comment', {
+                      method: 'POST',
+                      mode: 'cors',
+                      headers: {
+                        'Content-Type': 'application/json'
+                      }, 
+                      body: JSONData
+                    })
+                    .then((result) => {
+                        console.log(result);
+            
+                        const returnedStatus = result.status;
+                  
+                        console.log(returnedStatus);
+            
+                        if (returnedStatus === 201){
+                            console.log("comment created");
+                        } else {
+                            console.log("COmment wasn't created");
+                        }
+            
+                        setChangeArray(curState => !curState);
+                    })
+                    .catch((err) => {
+                        console.log(`Couldn't sign up with error ${err}`);
+                    })
+            }
         }
     }
 
-    // render posts
+    const renderComments = (commentIDs) => {
+        if (commentIDs.length > 0){
+            var renderVal = [];
+            commentIDs.forEach(
+                postID => {
+                    var curComment = 
+                        commentArray.filter(entry => 
+                            entry._id === postID)[0];
+
+                    renderVal.push(
+                        <div className="comment-pane">
+                            <div className='comment-subpane'>
+                                <div><span style={{fontStyle:'italic'}}>{curComment.posterEmail} says</span>: {curComment.text}</div>
+                            <AddCommentIcon onClick={addCommentFunction(curComment._id)}></AddCommentIcon>
+                            </div>
+                            {renderComments(curComment.comments)}
+                        </div>
+                    )
+                }
+            )
+            return renderVal;
+        } else {
+            return ""
+        }
+    }
+
     const renderPosts = () => {
         console.log("Rendering posts");
 
         if (postList?.length > 0){
-
-            const dateSort = (entry1, entry2) => {
-                const date1 = new Date( parseInt( 
-                    entry1.creationTimestamp, 16 ) * 1000 );
-                const date2 = new Date( parseInt( 
-                    entry2.creationTimestamp, 16 ) * 1000 );
-        
-                if (date1 < date2){
-                    return 1;
-                }
-        
-                if (date1 > date2){
-                    return -1;
-                }
-        
-                return 0;
-            }
-
 
             postList.sort((entry1, entry2) => dateSort(entry1, entry2));
 
@@ -577,13 +711,15 @@ const SubgreddiitPage = () => {
 
                         </div>
 
+                        {renderComments(entry[0].comments)}
+
                     </div>
                 )
             })
 
             return returnval;
         } else {
-            return "";
+            return "No posts";
         }
     }
 
@@ -651,9 +787,16 @@ const SubgreddiitPage = () => {
                 
                     </div>
 
-                    {/*** Posts ***/}
-                    <div className="post-div">
-                        {renderPosts()}
+                    <div className="list-posts">
+                        <div className="list-header">
+                        <Typography component="h1" variant="h5" onClick={toggleShowPosts}
+                            id="createPageToggling">
+                            Show Posts
+                        </Typography>
+                        </div>
+                        <div className="post-div">
+                            {arePostsRendered ? renderPosts() : ""}
+                        </div>
                     </div>
                 </div>
             </div>

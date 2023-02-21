@@ -22,12 +22,16 @@ export default function Login() {
   const authSuccessColor = 'white';
   const afterLogin = '/profile';
 
+  const [loginButtonDisabled, setLoginButtonDisabled] = React.useState(true);
+  const [signupButtonDisabled, setSignupButtonDisabled] = React.useState(true);
+
   const navigate = useNavigate();
 
   // for login button
   const handleLoginSubmit = (event) => {
 
     event.preventDefault();
+    setLoginButtonDisabled(curState => !curState);
     const data = new FormData(event.currentTarget);
     const submittedData = {
       email: data.get('loginEmail').toLowerCase(),
@@ -60,7 +64,6 @@ export default function Login() {
             
             localStorage.setItem('grediit-user-details', JSON.stringify(body));
             localStorage.setItem('grediit-user-token', body.token);
-
             navigate(afterLogin);
           })
           .catch((err) => {
@@ -71,14 +74,12 @@ export default function Login() {
         console.log("Invalid Credentials");
         setLoginFaliure('crimson');
       }
-      
+      setLoginButtonDisabled(curState => !curState);
     })
     .catch((err) => {
       console.log(`Couldn't send data with error ${err}`);
     });
   };
-
-  const [loginButtonDisabled, setLoginButtonDisabled] = React.useState(true);
 
   const [loginFaliure, setLoginFaliure] = React.useState(authSuccessColor);
 
@@ -98,6 +99,7 @@ export default function Login() {
   // for signup button
   const handleSignupSubmit = (event) => {
     event.preventDefault();
+    setSignupButtonDisabled(curState => !curState);
     const data = new FormData(event.currentTarget);
     const submittedData = {
       firstname: data.get('signupFirstname'),
@@ -134,7 +136,6 @@ export default function Login() {
             
             localStorage.setItem('grediit-user-details', JSON.stringify(body));
             localStorage.setItem('grediit-user-token', body.token);
-
             navigate(afterLogin);
           })
           .catch((err) => {
@@ -143,12 +144,12 @@ export default function Login() {
       } else if (returnedStatus === 409){
         setEmailInUse(true);
       }
+      setSignupButtonDisabled(curState => !curState);
     })
     .catch((err) => {
       console.log(`Couldn't sign up with error ${err}`);
     })
   };
-  const [signupButtonDisabled, setSignupButtonDisabled] = React.useState(true);
 
   const checkSignupFields = () => {
     const signupUsernameLength = document.getElementById('signupUsername').value.length;

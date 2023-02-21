@@ -677,7 +677,19 @@ app.post('/create-post', async (req, res) => {
 
     console.log("Updated page details for new post");
 
-    return res.status(201).send("created");
+    var status = 201;
+
+    existingPage.bannedWords.forEach(
+      (entry) => {
+        console.log(text.toLowerCase(), entry);
+        if (entry && entry !== '' && text.toLowerCase().includes(entry)){
+          console.log(`found ${entry} in ${text}`);
+          status = 202;
+        }
+      }
+    );
+
+    return res.status(status).send("created");
 
   } catch(err){
     console.log(err);
@@ -696,6 +708,33 @@ app.post('/access-post/:id', async (req, res) => {
     if (!returned_post){
       return res.status(400).send("No such post");
     }
+
+    function replaceAll(str,mapObj){
+      var re = new RegExp(Object.keys(mapObj).join("|"),"gi");
+  
+      return str.replace(re, function(matched){
+          return mapObj[matched.toLowerCase()];
+      });
+    }
+
+    var bannedObj = {};
+
+    const existingPage = await Subgreddiit.findOne({
+      name: returned_post[0].subgreddiitName
+    })
+
+    if (!existingPage){
+      return res.status(400).send("Subgreddiit Doesn't exist");
+    }
+
+    existingPage.bannedWords.forEach(entry => {
+      bannedObj[entry] = '*'.repeat(entry.length);
+    })
+
+    console.log('before', returned_post[0].text);
+    returned_post[0].text = 
+      replaceAll(returned_post[0].text, bannedObj);
+    console.log('after', returned_post[0].text);
 
     res.setHeader('Content-Type', 'application/json');
     return res.status(200).send(JSON.stringify(returned_post));
@@ -901,6 +940,86 @@ app.post('/access-saved-posts/:email', async (req, res) => {
 
     res.setHeader('Content-Type', 'application/json');
     return res.status(200).send(JSON.stringify(posts));
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// creating a comment
+app.post('/create-comment', async (req, res) => {
+  try{
+    const {
+      subgreddiitName, 
+      posterEmail,
+      text,
+      parentID
+    } = req.body;
+
+    console.log(subgreddiitName, posterEmail, text);
+
+    const existingPage = await Subgreddiit.findOne({
+      name: subgreddiitName
+    })
+
+    if (!existingPage){
+      return res.status(400).send("Subgreddiit Doesn't exist");
+    }
+
+    const parentComment = await Post.findOne({
+      _id: parentID
+    })
+
+    if (!parentComment){
+      return res.status(400).send("Parent Doesn't exist");
+    }
+
+    const return_comment = await Post.create({
+      subgreddiitName: subgreddiitName,
+      posterEmail: posterEmail,
+      text: text,
+      comments: [],
+      upvotedBy: [],
+      downvotedBy: [],
+      savedBy: [],
+    });
+
+    if (!return_comment){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    const return_post = await Post.findOneAndUpdate(
+      {
+        _id: parentID
+      },
+      {
+        comments: [...parentComment.comments, return_comment._id]
+      }
+    );
+
+    if (!return_post){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(201).send("created");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// returning comments in a page
+// accessing a post
+app.post('/all-posts/:name', async (req, res) => {
+  try{
+    const name = req.params['name'];
+
+    const returned_post = await Post.find({
+      subgreddiitName: name
+    });
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify(returned_post));
 
   } catch(err){
     console.log(err);
