@@ -18,8 +18,7 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
-import AddCommentIcon from '@mui/icons-material/AddComment';import { IconButton } from '@mui/material';
-import { Tooltip } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
 
 const SubgreddiitPage = () => {
     const {name} = useParams();
@@ -42,6 +41,10 @@ const SubgreddiitPage = () => {
     const [downvoteArray, setDownvoteArray] = React.useState();
     const [savedByArray, setSavedByArray] = React.useState();
     const [followingArray, setFollowingArray] = React.useState();
+    // a change state
+    const [changeState, setChangeState] = React.useState(true);
+    // storing all posts loaded until now (only on demand)
+    const [allPosts, setAllPosts] = React.useState([]);
 
     useEffect(() => {
         document.title = `Greddiit | ${name}`;
@@ -116,6 +119,9 @@ const SubgreddiitPage = () => {
                                                         postBody.downvoteCount = 
                                                             postBody[0].downvotedBy.length - postBody.isDownvoted;
 
+                                                        postBody.loadedComments = 
+                                                            [];
+
                                                         if (postBody.isUpvoted)
                                                         {
                                                             curUpvoteArray.push(postID)
@@ -138,7 +144,8 @@ const SubgreddiitPage = () => {
                                                             setDownvoteArray(curDownvoteArray);
                                                             setSavedByArray(curSavedByArray);
                                                             setUpvoteArray(curUpvoteArray);
-                                                            setPostList(resultArray);                  
+                                                            setPostList(resultArray);    
+                                                            setAllPosts(resultArray);              
                                 
                                                             // loaded basic page data
                                                             console.log("Loaded page");
@@ -166,7 +173,7 @@ const SubgreddiitPage = () => {
 
             initRender();
         }, 1000);
-    }, [user.email, name]);
+    }, [changeState, user.email, name]);
 
     // loading page
     if (isLoading) {
@@ -175,6 +182,7 @@ const SubgreddiitPage = () => {
         );
     }
 
+    // creation of posts
     const toggleCreatePost = () => {
         if (!curPage.userEmails.includes(user.email)){
             alert("You must be a member to do this!");
@@ -229,6 +237,8 @@ const SubgreddiitPage = () => {
               }
   
               setPostCreationButtonDisabled(false);
+
+              setChangeState(curState => !curState);
           })
           .catch((err) => {
               console.log(`Couldn't sign up with error ${err}`);
@@ -459,9 +469,221 @@ const SubgreddiitPage = () => {
         }
     }
 
+    const showReplies = (parentID) => {
+        return async function() {
+            console.log(`Showing Replies for ${parentID}`);
+
+            // retrieving parent post from all posts
+            let parentPost = null;
+            allPosts.forEach( ele => {
+                if (ele[0]._id === parentID){
+                    parentPost = ele;
+                }
+            }); 
+
+            if (!parentPost){
+                alert("Something went wrong");
+                return;
+            }
+
+            const childrenPostIDs = parentPost[0].comments;
+            if (childrenPostIDs.length === 0){
+                console.log("No comments");
+            } else {
+
+                console.log(`Going to render ${childrenPostIDs}`);
+                var curPosts = [...allPosts];
+                const initLength = allPosts.length;
+
+                // finding initial comment length
+                let initNumComments = 0;
+                for (let i = 0; i<curPosts.length; i++){
+                    if (curPosts[i][0]._id === parentID){
+                        initNumComments = curPosts[i].loadedComments.length;
+                    }
+                }
+
+                childrenPostIDs.forEach (postID => {
+                    
+                    fetch(`http://localhost:5000/access-post/${postID}`, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        }, 
+                        body: null
+                    })
+                    .then((postResult) => {
+                        const postStatus = postResult.status;
+
+                        if (postStatus === 200){
+                            postResult.json()
+                                .then(postBody => {
+                                    // adding comment ID to loaded comments of cureent post
+                                    for (let i = 0; i<curPosts.length; i++){
+                                        if (curPosts[i][0]._id === parentID){
+                                            if (!curPosts[i].loadedComments.includes(postID)){
+                                                curPosts[i].loadedComments.push(postID);
+                                                
+                                                // adding comment to all loaded posts
+                                                postBody.loadedComments = [];
+                                                curPosts.push(postBody);
+                                            }
+                                        }
+                                    }
+
+                                    if (curPosts.length - initLength === childrenPostIDs.length - initNumComments){
+                                        console.log(curPosts);
+                                        setAllPosts(curPosts);
+                                    }
+                                })
+                            }
+                    });
+                });
+
+            }
+        }
+    }
+
     const addCommentFunction = (parentID) => {
         return async function() {
-            console.log("Adding comment");
+            console.log(`Adding comment for ${parentID}`);
+
+            const commentText = window.prompt("Enter comment text:");
+            
+            if (!commentText){
+                console.log("Adding comment cancelled");
+                return;
+            } else if (commentText === ''){
+                window.alert("Comment cannot be empty");
+                return;
+            } else {
+                console.log(commentText);
+
+                const submittedData = {
+                    text: commentText,
+                    subgreddiitName: name,
+                    posterEmail: user.email,
+                    parentID: parentID
+                  };
+          
+                  const JSONData = JSON.stringify(submittedData);
+          
+                  fetch('http://localhost:5000/create-comment', {
+                      method: 'POST',
+                      mode: 'cors',
+                      headers: {
+                        'Content-Type': 'application/json'
+                      }, 
+                      body: JSONData
+                    })
+                    .then((result) => {
+                        console.log(result);
+            
+                        const returnedStatus = result.status;
+                  
+                        console.log(returnedStatus);
+            
+                        if (returnedStatus === 201){
+                            console.log("comment created");
+
+                            // adding comment to frontend
+                            result.json().then(commentBody => {
+                                console.log(commentBody);
+                                const commentID = commentBody._id;
+
+                                var curPosts = [...allPosts];
+
+                                for (let i = 0; i<curPosts.length; i++){
+                                    if (curPosts[i][0]._id === parentID){
+                                        curPosts[i][0].comments.push(commentID);
+                                        console.log(curPosts[i][0].comments);
+                                    }
+                                }
+                                setAllPosts(curPosts);
+                                document.getElementById(`showRepliesButton${parentID}`).click();
+                            })
+
+                        } else {
+                            console.log("COmment wasn't created");
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(`Couldn't sign up with error ${err}`);
+                    })
+            }
+        }
+    }
+
+    // rendering comments
+    const renderComments = (parentID) => {
+        // looking for id in all posts
+        var commentList = null;
+
+        allPosts.forEach( ele => {
+            if (ele[0]._id === parentID){
+                commentList = ele.loadedComments;
+            }
+        })
+
+        if (!commentList){
+            alert("Something went wrong");
+            console.log(`Couldn't find parent ${parentID} among allPosts`);
+            return;
+        }
+
+        // rendering the comments
+        if (commentList.length > 0){
+        
+            var renderVal = [];
+            commentList.forEach(
+                postID => {
+                    let curComment = null;
+                    allPosts.forEach(ele => {
+                        if (ele[0]._id === postID){
+                            curComment = ele[0];
+                        }
+                    });
+
+                    if (!curComment){
+                        alert("Something went wrong");
+                        console.log(`Couldn't find comment ${postID} in allPosts`);
+                    }
+
+                    renderVal.push(
+                            <div className='comment-pane'>
+                                <div><span style={{fontStyle:'italic'}}>{curComment.posterEmail} says</span>: {curComment.text}</div>
+                                
+                                <div className="comment-func-div">
+                                    {curComment.comments.length > 0 ? 
+                                        <div>
+                                            <Button onClick={showReplies(curComment._id)} id={`showRepliesButton${curComment._id}`}>
+                                            <span style={{fontSize:'10px'}}>Show {curComment.comments.length} Replies </span>
+                                            </Button>
+                                        </div>
+                                        :
+                                        <div>
+                                            <Button disabled>
+                                            <span style={{fontSize:'10px'}}>No replies yet</span>
+                                            </Button>
+                                        </div>
+                                    }
+                                    <div>
+                                        <Button onClick={addCommentFunction(curComment._id)}>
+                                        <span style={{fontSize:'10px'}}>Add Comment</span>
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                {renderComments(curComment._id)}
+                            </div>
+                    )
+                }
+            )
+            return renderVal;    
+
+        } else {
+            return "";
         }
     }
 
@@ -496,25 +718,49 @@ const SubgreddiitPage = () => {
 
                 const renderUpvoteIcon = () => {
                     if (upvoteArray?.includes(entry[0]._id)) {
-                        return <ThumbUpIcon onClick={upvoteFunction(entry[0]._id)}></ThumbUpIcon>
+                        return (
+                            <IconButton onClick={upvoteFunction(entry[0]._id)}>
+                            <ThumbUpIcon></ThumbUpIcon>
+                            </IconButton>
+                        )
                     } else {
-                        return <ThumbUpOffAltIcon onClick={upvoteFunction(entry[0]._id)}></ThumbUpOffAltIcon>
+                        return (
+                            <IconButton onClick={upvoteFunction(entry[0]._id)}>
+                            <ThumbUpOffAltIcon></ThumbUpOffAltIcon>
+                            </IconButton>
+                        )
                     }
                 }
 
                 const renderDownvoteIcon = () => {
                     if (downvoteArray?.includes(entry[0]._id)) {
-                        return <ThumbDownIcon onClick={downvoteFunction(entry[0]._id)}></ThumbDownIcon>
+                        return (
+                            <IconButton onClick={downvoteFunction(entry[0]._id)}>
+                            <ThumbDownIcon></ThumbDownIcon>
+                            </IconButton>
+                            )
                     } else {
-                        return <ThumbDownOffAltIcon onClick={downvoteFunction(entry[0]._id)}></ThumbDownOffAltIcon>
+                        return (
+                            <IconButton onClick={downvoteFunction(entry[0]._id)}>
+                            <ThumbDownOffAltIcon></ThumbDownOffAltIcon>
+                            </IconButton>
+                        )
                     }
                 }
 
                 const renderSaveIcon = () => {
                     if (savedByArray?.includes(entry[0]._id)) {
-                        return <BookmarkIcon onClick={saveFunction(entry[0]._id)}></BookmarkIcon>
+                        return (
+                            <IconButton onClick={saveFunction(entry[0]._id)}>
+                            <BookmarkIcon></BookmarkIcon>
+                            </IconButton>
+                        )
                     } else {
-                        return <BookmarkBorderIcon onClick={saveFunction(entry[0]._id)}></BookmarkBorderIcon>
+                        return (
+                            <IconButton onClick={saveFunction(entry[0]._id)}>
+                            <BookmarkBorderIcon></BookmarkBorderIcon>
+                            </IconButton>
+                        )
                     }
                 }
 
@@ -523,14 +769,18 @@ const SubgreddiitPage = () => {
                         return "";
 
                     if (!followingArray?.includes(entry[0].posterEmail)) {
-                        return <PersonAddIcon onClick={followFunction(entry[0].posterEmail)}></PersonAddIcon>
+                        return (
+                            <IconButton onClick={followFunction(entry[0].posterEmail)}>
+                            <PersonAddIcon></PersonAddIcon>
+                            </IconButton>
+                        )
                     } else {
-                        return <PersonAddDisabledIcon onClick={followFunction(entry[0].posterEmail)}></PersonAddDisabledIcon>
+                        return (
+                            <IconButton onClick={followFunction(entry[0].posterEmail)}>
+                            <PersonAddDisabledIcon></PersonAddDisabledIcon>
+                            </IconButton>
+                        )
                     }
-                }
-
-                const renderAddComment = () => {
-                    return <AddCommentIcon onClick={addCommentFunction(entry[0]._id)}></AddCommentIcon>
                 }
 
                 returnval.push(
@@ -567,15 +817,37 @@ const SubgreddiitPage = () => {
                             {
                                 renderFollow()
                             }
-                            {
-                                renderAddComment()
-                            }
+   
                         </div>
-
 
                         <div className="horizontal-line-divider">
 
                         </div>
+
+                        <div className="comment-func-div">
+                            {entry[0].comments.length > 0 ? 
+                                <div>
+                                    <Button onClick={showReplies(entry[0]._id)} id={`showRepliesButton${entry[0]._id}`}>
+                                    Show {entry[0].comments.length} Replies
+                                    </Button>
+                                </div>
+                                :
+                                <div>
+                                    <Button disabled>
+                                    No replies yet
+                                    </Button>
+                                </div>
+                            }
+                            <div>
+                                <Button onClick={addCommentFunction(entry[0]._id)}>
+                                Add Comment
+                                </Button>
+                            </div>
+                        </div>
+
+                        {
+                            renderComments(entry[0]._id)
+                        }
 
                     </div>
                 )

@@ -1001,7 +1001,8 @@ app.post('/create-comment', async (req, res) => {
       return res.status(500).send("Could not access database! Internal Server Error");
     }
 
-    return res.status(201).send("created");
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(201).send(JSON.stringify(return_comment));
 
   } catch(err){
     console.log(err);
