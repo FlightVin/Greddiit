@@ -119,7 +119,9 @@ const JoinRequests = () => {
                     <p className='joinlist-para'>
                         <span style={{fontWeight:'bold'}}>User: </span>
                         {entry}
+                    </p>
                     
+                    <div>
                     <Tooltip title="Reject"> 
                                 <ClearIcon className='deleteIcon' 
                                     sx={{fontSize: 20}}
@@ -131,7 +133,7 @@ const JoinRequests = () => {
                                     sx={{fontSize: 20}}
                                     onClick={acceptJoin(entry)}/>
                     </Tooltip>
-                    </p>
+                    </div>
                 </div>
             )
         })

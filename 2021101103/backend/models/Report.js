@@ -7,12 +7,15 @@ const reportSchema = new mongoose.Schema({
   subgreddiitName: {
     type: String,
   },
-  concernText: {
+  text: {
     type: String,
   },
   postID: {
-    type: mongoose.ObjectId,
-  }
+    type: String,
+  },
+  isIgnored: {
+    type: Boolean,
+  },
 });
 
 const Report = mongoose.model("report", reportSchema);

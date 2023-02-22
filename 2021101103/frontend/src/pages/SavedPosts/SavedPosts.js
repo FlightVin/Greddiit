@@ -171,7 +171,7 @@ const SavedPosts = () => {
             }
 
             initRender();
-        }, 1000);
+        }, 2000);
     }, [changeArray, user.email]);
 
     const [renderPostForm, setRenderPostForm] = React.useState(false);

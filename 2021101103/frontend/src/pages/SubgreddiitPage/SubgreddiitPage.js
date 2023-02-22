@@ -19,6 +19,7 @@ import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
 import IconButton from '@mui/material/IconButton';
+import FlagIcon from '@mui/icons-material/Flag';
 
 const SubgreddiitPage = () => {
     const {name} = useParams();
@@ -48,12 +49,45 @@ const SubgreddiitPage = () => {
 
     useEffect(() => {
         document.title = `Greddiit | ${name}`;
-    }, []);
+    }, [name]);
 
     // loading all basic data
     useEffect(() => {
         setTimeout(() => {
             const initRender = async () => {
+                // getting following array
+                fetch(`http://localhost:5000/access-followers/${user.email}`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }, 
+                    body: null
+                })
+                .then((result) => {
+                    const returnedStatus = result.status;
+        
+                    if (returnedStatus === 200){
+                
+                        result.json()
+                            .then((body) => {
+                                console.log(body);
+
+                                setFollowingArray([]);
+                                body.following.forEach(entry => {
+                                    setFollowingArray(oldArray => [...oldArray, entry.followingEmail]);
+                                });  
+                                    
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                            });
+                
+                    } else {
+                            console.log("Initial fetch failed");
+                    }
+                });
+
                 // fetcing basic data
                 fetch(`http://localhost:5000/subgreddiit-exists/${name}`, {
                     method: 'POST',
@@ -84,7 +118,7 @@ const SubgreddiitPage = () => {
                                 .forEach(
                                     postID =>{
                                         
-                                        fetch(`http://localhost:5000/access-post/${postID}`, {
+                                        fetch(`http://localhost:5000/access-subgreddiit-post/${postID}`, {
                                             method: 'POST',
                                             mode: 'cors',
                                             headers: {
@@ -159,11 +193,7 @@ const SubgreddiitPage = () => {
                                     }
                                 )
                             } else {
-                                var resultArray = [];
-                                var curUpvoteArray = [];
-                                var curDownvoteArray = [];
-                                var curSavedByArray = [];
-                                
+
                                 setDownvoteArray(curDownvoteArray);
                                 setSavedByArray(curSavedByArray);
                                 setUpvoteArray(curUpvoteArray);
@@ -486,6 +516,65 @@ const SubgreddiitPage = () => {
         }
     }
 
+    const reportFunction = (postID) => {
+        return async function() {
+            if (!curPage.userEmails.includes(user.email)){
+                alert("You must be a member to do this!");
+                return;
+            }
+
+            console.log(`Report initiated for ${postID} by ${user.email}`);
+        
+            const reportText = window.prompt("Enter concern:");
+            
+            if (!reportText){
+                console.log("Adding concern cancelled");
+                return;
+            } else if (reportText === ''){
+                window.alert("Concern cannot be empty");
+                return;
+            } else {
+                console.log(reportText);
+
+                const submittedData = {
+                    text: reportText,
+                    subgreddiitName: name,
+                    reporterEmail: user.email,
+                    postID: postID
+                  };
+          
+                  const JSONData = JSON.stringify(submittedData);
+          
+                  fetch('http://localhost:5000/create-report', {
+                      method: 'POST',
+                      mode: 'cors',
+                      headers: {
+                        'Content-Type': 'application/json'
+                      }, 
+                      body: JSONData
+                    })
+                    .then((result) => {
+                        console.log(result);
+            
+                        const returnedStatus = result.status;
+                  
+                        console.log(returnedStatus);
+            
+                        if (returnedStatus === 201){
+                            console.log("Report Created");
+    
+                        } else {
+                            alert("Something went wrong");
+                            console.log("Report wasn't created");
+                        }
+                    })
+                    .catch((err) => {
+                        console.log(`Couldn't sign up with error ${err}`);
+                    })
+            }
+        }
+    }
+
     const showReplies = (parentID) => {
         return async function() {
             console.log(`Showing Replies for ${parentID}`);
@@ -800,6 +889,23 @@ const SubgreddiitPage = () => {
                     }
                 }
 
+                const renderReportIcon = () => {
+
+                    if (entry[0].posterEmail === user.email || entry[0].posterEmail === curPage.moderatorEmail){
+                        return (
+                            <IconButton disabled>
+                            <FlagIcon></FlagIcon>
+                            </IconButton>
+                        )
+                    } else {
+                        return (
+                            <IconButton onClick={reportFunction(entry[0]._id)}>
+                            <FlagIcon></FlagIcon>
+                            </IconButton>
+                        )
+                    }                    
+                }
+
                 returnval.push(
                     <div className="single-post-pane">
 
@@ -833,6 +939,9 @@ const SubgreddiitPage = () => {
                             }
                             {
                                 renderFollow()
+                            }
+                            {
+                                renderReportIcon()
                             }
    
                         </div>

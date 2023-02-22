@@ -10,6 +10,7 @@ const User = require('./models/User');
 const Follower = require('./models/Follower');
 const Subgreddiit = require('./models/Subgreddiit');
 const Post = require('./models/Post');
+const Report = require('./models/Report');
 const {mongoConnect, DB_URI} = require('./database/mongo');
 
 const app = express();
@@ -696,6 +697,60 @@ app.post('/create-post', async (req, res) => {
   }
 });
 
+// accessing a post (non moderator mode)
+app.post('/access-subgreddiit-post/:id', async (req, res) => {
+  try{
+    const postID = req.params['id'];
+
+    const returned_post = await Post.find({
+      _id: postID
+    });
+
+    if (!returned_post){
+      return res.status(400).send("No such post");
+    }
+
+    function replaceAll(str,mapObj){
+      var re = new RegExp(Object.keys(mapObj).join("|"),"gi");
+  
+      return str.replace(re, function(matched){
+          return mapObj[matched.toLowerCase()];
+      });
+    }
+
+    var bannedObj = {};
+
+    const existingPage = await Subgreddiit.findOne({
+      name: returned_post[0].subgreddiitName
+    })
+
+    if (!existingPage){
+      return res.status(400).send("Subgreddiit Doesn't exist");
+    }
+
+    existingPage.bannedWords.forEach(entry => {
+      bannedObj[entry] = '*'.repeat(entry.length);
+    })
+
+    // removing banned words
+    console.log('before', returned_post[0].text);
+    returned_post[0].text = 
+      replaceAll(returned_post[0].text, bannedObj);
+    console.log('after', returned_post[0].text);
+
+    // checking whether user is blocked
+    if (existingPage.blockedUserEmails.includes(returned_post[0].posterEmail)){
+      returned_post[0].posterEmail = "Blocked User"
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify(returned_post));
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
 // accessing a post
 app.post('/access-post/:id', async (req, res) => {
   try{
@@ -1009,7 +1064,6 @@ app.post('/create-comment', async (req, res) => {
   }
 });
 
-// returning comments in a page
 // accessing a post
 app.post('/all-posts/:name', async (req, res) => {
   try{
@@ -1024,6 +1078,108 @@ app.post('/all-posts/:name', async (req, res) => {
 
   } catch(err){
     console.log(err);
+  }
+});
+
+// creating a report
+app.post('/create-report', async (req, res) => {
+  try{
+    const {
+      subgreddiitName, 
+      reporterEmail,
+      text,
+      postID
+    } = req.body;
+
+    const existingPage = await Subgreddiit.findOne({
+      name: subgreddiitName
+    })
+
+    if (!existingPage){
+      return res.status(400).send("Subgreddiit Doesn't exist");
+    }
+
+    const return_report = await Report.create({
+      subgreddiitName: subgreddiitName,
+      reporterEmail: reporterEmail,
+      text: text,
+      postID: postID,
+      isIgnored: false,
+    });
+
+    if (!return_report){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(201).send("Report created");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// accessing reports
+app.post('/access-reports/:name', async (req, res) => {
+  try{
+    const email = req.params['name'];
+
+    const reports = await Report.find({ 
+      subgreddiitName: email
+    });
+
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).send(JSON.stringify(reports));
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// toggle ignore
+app.post('/toggle-report-ignore/:id', async (req, res) => {
+  try{
+    const id = req.params['id'];
+
+    const existing_report = await Report.findOne({ 
+      _id: id
+    });
+
+    if (!existing_report){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    const return_comment = await Report.findOneAndUpdate(
+      {_id: id},{
+      isIgnored: !existing_report.isIgnored,
+    }, {
+      new: true
+    });
+
+    if (!return_comment){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    return res.status(200).send("toggled ignore");
+
+  } catch(err){
+    console.log(err);
+  }
+});
+
+// deleting report
+app.delete('/delete-report/:id', async (req, res) => {
+  try{
+    const id = req.params['id'];
+
+    const returned_data = await Report.findOneAndDelete({
+      _id: id,
+    });
+    
+    return res.status(200).send(returned_data);
+
+  } catch(err){
+    console.log(err);
+    return res.status(400).send("Couldn't create follower entry");
   }
 });
 

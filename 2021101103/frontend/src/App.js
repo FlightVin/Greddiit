@@ -12,6 +12,7 @@ import { SubgreddiitCheck, MySubgreddiitCheck} from './pages/SubgreddiitCheck/Su
 import SubGreddiitUsers from './pages/SubgreddiitUsers/SubgreddiitUsers';
 import SubgreddiitPage from './pages/SubgreddiitPage/SubgreddiitPage';
 import SavedPosts from './pages/SavedPosts/SavedPosts';
+import Reported from './pages/Reported/Reported';
 
 function App() {
   return (
@@ -74,6 +75,15 @@ function App() {
           <MySubgreddiitCheck>
             <Dashboard />
             <JoinRequests />
+          </MySubgreddiitCheck>
+        </Protected>
+      } />
+
+      <Route path="/mysubgreddiit/:name/reported" element={
+        <Protected>
+          <MySubgreddiitCheck>
+            <Dashboard />
+            <Reported />
           </MySubgreddiitCheck>
         </Protected>
       } />
