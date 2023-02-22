@@ -79,6 +79,7 @@ const SubgreddiitPage = () => {
                             var curDownvoteArray = [];
                             var curSavedByArray = [];
 
+                            if (body.postObjectIDs.length > 0){
                             body.postObjectIDs
                                 .forEach(
                                     postID =>{
@@ -157,6 +158,22 @@ const SubgreddiitPage = () => {
                                         })
                                     }
                                 )
+                            } else {
+                                var resultArray = [];
+                                var curUpvoteArray = [];
+                                var curDownvoteArray = [];
+                                var curSavedByArray = [];
+                                
+                                setDownvoteArray(curDownvoteArray);
+                                setSavedByArray(curSavedByArray);
+                                setUpvoteArray(curUpvoteArray);
+                                setPostList(resultArray);    
+                                setAllPosts(resultArray);              
+    
+                                // loaded basic page data
+                                console.log("Loaded page");
+                                setLoading(false);
+                            }
 
                         })
                         .catch((err) => {
