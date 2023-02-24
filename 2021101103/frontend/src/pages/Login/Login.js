@@ -25,6 +25,10 @@ export default function Login() {
 
   const [loginButtonDisabled, setLoginButtonDisabled] = React.useState(true);
   const [signupButtonDisabled, setSignupButtonDisabled] = React.useState(true);
+  const [loginEmailHelper, setLoginEmailHelper] = React.useState("");
+  const [signupEmailValid, setSignupEmailValid] = React.useState(true);
+  const [signupUsernameValid, setSignupUsernameValid] = React.useState(true);
+  const [signupContactValid, setSignupContactValid] = React.useState(true);
 
   const navigate = useNavigate();
 
@@ -88,7 +92,23 @@ export default function Login() {
     const loginEmailLength = document.getElementById('loginEmail').value.length;
     const loginPasswordLength = document.getElementById('loginPassword').value.length;
 
-    if (loginEmailLength > 0 && loginPasswordLength > 0){
+    const validateEmail = (email) => {
+      return String(email)
+        .toLowerCase()
+        .match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+    };
+    const emailAddress = document.getElementById('loginEmail').value;
+    const emailValid = validateEmail(emailAddress) || emailAddress === 'admin';
+
+    if (!emailValid){
+      setLoginEmailHelper("Not an email");
+    } else {
+      setLoginEmailHelper("");
+    }
+
+    if (loginEmailLength > 0 && loginPasswordLength > 0 && emailValid){
         setLoginButtonDisabled(false);
     } else {
         setLoginButtonDisabled(true);
@@ -158,9 +178,27 @@ export default function Login() {
     const signupEmailLength = document.getElementById('signupEmail').value.length;
     const signupLastnameLength = document.getElementById('signupLastname').value.length;
 
+    const validateEmail = (email) => {
+      return String(email)
+        .toLowerCase()
+        .match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+    };
+    const emailAddress = document.getElementById('signupEmail').value;
+    const emailValid = validateEmail(emailAddress);
+    setSignupEmailValid(emailValid);
 
+    const username = document.getElementById('signupUsername').value;
+    const usernameValid = username.indexOf(' ')<0;
+    setSignupUsernameValid(usernameValid);  
+    
+    const contact = document.getElementById('signupContactNumber').value;
+    const contactValid = contact.length === 0 || (contact.length === 10 && /\d{10}/.test(contact));
+    setSignupContactValid(contactValid);
+    
     if (signupUsernameLength > 0 && signupPasswordLength > 0 && signupEmailLength > 0
-        && signupLastnameLength > 0){
+        && signupLastnameLength > 0 && emailValid && usernameValid && contactValid){
         setSignupButtonDisabled(false);
     } else {
         setSignupButtonDisabled(true);
@@ -203,6 +241,7 @@ export default function Login() {
               label="Email"
               name="loginEmail"
               onKeyUp={checkLoginFields}
+              helperText={loginEmailHelper}
             />
 
             <TextField
@@ -288,6 +327,7 @@ export default function Login() {
               label="Username"
               name="signupUsername"
               onKeyUp={checkSignupFields}
+              helperText={signupUsernameValid ? "" : "No spaces are allowed"}
             />
 
             <TextField
@@ -298,7 +338,7 @@ export default function Login() {
               label="Email"
               name="signupEmail"
               onKeyUp={checkSignupFields}
-              helperText={emailInUse ? "Email already in use!": ""}
+              helperText={emailInUse ? "Email already in use!": signupEmailValid ? "" : "Not a valid email"}
             />
 
             <TextField
@@ -316,6 +356,8 @@ export default function Login() {
               id="signupContactNumber"
               label="Contact Number"
               name="signupContactNumber"
+              helperText={signupContactValid ? "" : "Expecting 10 digit number"}
+              onKeyUp={checkSignupFields}
             />
 
             <TextField

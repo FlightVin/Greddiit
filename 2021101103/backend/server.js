@@ -50,11 +50,20 @@ app.post('/login', async (req, res) => {
   try{
     const {email, password} = req.body;
 
+    const validateEmail = (email) => {
+      return email.length > 0 && String(email)
+        .toLowerCase()
+        .match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+    };
+    const emailValid = validateEmail(email) || email === 'admin';
+
     const existingUser = await User.findOne(
       {email}
     );
 
-    if (!existingUser){
+    if (!existingUser || !emailValid){
       console.log("Email not in use");
       return res.status(403).send("invalid credentials");
     }
@@ -103,11 +112,23 @@ app.post('/register', async (req, res) => {
       password
     } = req.body;
 
+    const validateEmail = (email) => {
+      return email.length > 0 && String(email)
+        .toLowerCase()
+        .match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+    };
+    const emailValid = validateEmail(email) || email === 'admin';
+    const usernameValid = username.indexOf(' ')<0;
+    const contactValid = contact_number.length === 0 || (contact_number.length === 10 && /\d{10}/.test(contact_number));
+
     const existingUser = await User.findOne(
       {email}
     );
 
-    if (existingUser){
+    if (existingUser || !emailValid || !usernameValid
+        || !contactValid){
       return res.status(409).send("Email already in use");
     }
 
@@ -159,6 +180,17 @@ app.post('/edit', async (req, res) => {
       password
     } = req.body;
 
+    const validateEmail = (email) => {
+      return email.length > 0 && String(email)
+        .toLowerCase()
+        .match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+    };
+    const emailValid = validateEmail(email) || email === 'admin';
+    const usernameValid = username.indexOf(' ')<0;
+    const contactValid = contact_number.length === 0 || (contact_number.length === 10 && /\d{10}/.test(contact_number));
+
     console.log(data);
 
     const existingUser = await User.findOne(
@@ -167,7 +199,7 @@ app.post('/edit', async (req, res) => {
 
     console.log(existingUser);
 
-    if (!existingUser){
+    if (!existingUser || !emailValid || !usernameValid || !contactValid){
       return res.status(400).send("Doesn't exist!");
     }
     console.log('user found');
@@ -1211,13 +1243,27 @@ app.delete('/delete-report/:id', async (req, res) => {
 // deleting post
 app.delete('/delete-post/:id', async (req, res) => {
   try{
+    // delete post
     const id = req.params['id'];
 
     const returned_data = await Post.findOneAndDelete({
       _id: id,
     });
+
+    if (!returned_data){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
+
+    // deleting reports
+    const returned_reports = await Report.deleteMany({
+      postID: id,
+    });
+
+    if (!returned_reports){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }
     
-    return res.status(200).send(returned_data);
+    return res.status(200).send("deleted");
 
   } catch(err){
     console.log(err);

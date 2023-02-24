@@ -22,6 +22,8 @@ const Profile = () => {
     const [areFollowersDisplayed, setAreFollowersDisplayed] = React.useState(false);
     const [areFollowingDisplayed, setAreFollowingDisplayed] = React.useState(false);
     const [followingButtonDisabled, SetFollowingButtonDisabled] = React.useState(true);
+    const [signupUsernameValid, setSignupUsernameValid] = React.useState(true);
+    const [signupContactValid, setSignupContactValid] = React.useState(true);
 
     useEffect(() => {
         document.title = 'Greddiit | Profile';
@@ -74,7 +76,7 @@ const Profile = () => {
     const deleteFollower = (followerEmail, followingEmail) => {
         return async function(){
             console.log(followerEmail,followingEmail);
-            fetch(`${baseURL}/${followerEmail}/${followingEmail}`, {
+            fetch(`${baseURL}/delete-follower/${followerEmail}/${followingEmail}`, {
                 method: 'DELETE',
                 mode: 'cors',
                 headers: {
@@ -147,13 +149,21 @@ const Profile = () => {
         const signupPasswordLength = document.getElementById('editPassword').value.length;
         const signupEmailLength = document.getElementById('editEmail').value.length;
         const signupLastnameLength = document.getElementById('editLastname').value.length;
-        
-        if (signupUsernameLength > 0 && signupPasswordLength > 0 && signupEmailLength > 0
-            && signupLastnameLength > 0){
-            setEditButtonDisabled(false);
-        } else {
-            setEditButtonDisabled(true);
-        }
+      
+          const username = document.getElementById('editUsername').value;
+          const usernameValid = username.indexOf(' ')<0;
+          setSignupUsernameValid(usernameValid);  
+          
+          const contact = document.getElementById('editContactNumber').value;
+          const contactValid = contact.length === 0 || (contact.length === 10 && /\d{10}/.test(contact));
+          setSignupContactValid(contactValid);
+          
+          if (signupUsernameLength > 0 && signupPasswordLength > 0 && signupEmailLength > 0
+              && signupLastnameLength > 0 && usernameValid && contactValid){
+                setEditButtonDisabled(false);
+          } else {
+                setEditButtonDisabled(true);
+          }
     }
       
     const handleEditSubmit = (event) => {
@@ -404,6 +414,7 @@ const Profile = () => {
                         label="Username"
                         name="editUsername"
                         defaultValue={user.username}
+                        helperText={signupUsernameValid ? "" : "No spaces are allowed"}
                         onKeyUp={checkEditFields}
                         />
 
@@ -436,6 +447,8 @@ const Profile = () => {
                         label="Contact Number"
                         name="editContactNumber"
                         defaultValue={user.contact_number}
+                        helperText={signupContactValid ? "" : "Expecting 10 digit number"}
+                        onKeyUp={checkEditFields}
                         />
 
                         <TextField

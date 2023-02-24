@@ -352,32 +352,45 @@ const Reported = () => {
         return async function() {
             console.log(`Called delete for ID ${reportID}`);
 
-            // var curArray = reportList.filter(ele => {
-            //     return ele._id !== reportID
-            // });
+            var postID = null;
+            for (let i = 0; i<reportList.length; i++){
+                if (reportList[i]._id === reportID){
+                    postID = reportList[i].postBody._id;
+                }
+            }
+    
+            if (!postID){
+                alert("Something went wrong");
+                console.log(`Couldn't access data for report ${reportID} while rendering block button`);
+                return;
+            }
 
-            // // making changes in backend
-            // fetch(`${baseURL}/delete-report/${reportID}`, {
-            //     method: 'DELETE',
-            //     mode: 'cors',
-            //     headers: {
-            //     'Content-Type': 'application/json'
-            //     }, 
-            //     body: null
-            // })
-            // .then(result => {
-            //     const returnedStatus = result.status;
+            var curArray = reportList.filter(ele => {
+                return ele.postBody._id !== postID
+            });
 
-            //     if (returnedStatus === 200){
-            //         console.log("Deleted report");
-            //     } else {
-            //         console.log("Couldn't delete ignore");
-            //         alert("Something went wrong");
-            //     }
-            // })
+            // making changes in backend
+            fetch(`${baseURL}/delete-post/${postID}`, {
+                method: 'DELETE',
+                mode: 'cors',
+                headers: {
+                'Content-Type': 'application/json'
+                }, 
+                body: null
+            })
+            .then(result => {
+                const returnedStatus = result.status;
 
-            // // making changes in frontend
-            // setReportList(curArray);
+                if (returnedStatus === 200){
+                    console.log("Deleted post");
+                } else {
+                    console.log("Couldn't delete post");
+                    alert("Something went wrong");
+                }
+            })
+
+            // making changes in frontend
+            setReportList(curArray);
         }
     }
 
