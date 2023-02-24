@@ -418,6 +418,15 @@ app.delete('/delete-subgreddiit/:name', async (req, res) => {
       return res.status(500).send("Could not access database! Internal Server Error");
     }
 
+    // deleting reports
+    const returned_data_for_reports = await Report.deleteMany({
+      subgreddiitName: name
+    })
+
+    if (!returned_data_for_reports){
+      return res.status(500).send("Could not access database! Internal Server Error");
+    }    
+
     // deleting page
     const returned_data = await Subgreddiit.findOneAndDelete({
       name: name
@@ -1121,14 +1130,30 @@ app.post('/create-report', async (req, res) => {
 // accessing reports
 app.post('/access-reports/:name', async (req, res) => {
   try{
-    const email = req.params['name'];
+    const name = req.params['name'];
 
     const reports = await Report.find({ 
-      subgreddiitName: email
+      subgreddiitName: name
+    });
+
+    const curDate = new Date();
+    const expiryTime = 1000*60*60*24*10;
+    // 1000 * 60 seconds * 60 minutes * 24 hours per day
+
+    for (let i = 0; i<reports.length; i++){
+      if (curDate - reports[i]._id.getTimestamp() >= expiryTime){
+        const returned_data = await Report.findOneAndDelete({
+          _id: reports[i]._id,          
+        });
+      }
+    }
+
+    const fixedReports = await Report.find({ 
+      subgreddiitName: name
     });
 
     res.setHeader('Content-Type', 'application/json');
-    return res.status(200).send(JSON.stringify(reports));
+    return res.status(200).send(JSON.stringify(fixedReports));
 
   } catch(err){
     console.log(err);

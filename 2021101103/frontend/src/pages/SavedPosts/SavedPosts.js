@@ -174,12 +174,6 @@ const SavedPosts = () => {
         }, 2000);
     }, [changeArray, user.email]);
 
-    const [renderPostForm, setRenderPostForm] = React.useState(false);
-    const [postCreationButtonDisabled, setPostCreationButtonDisabled]
-        = React.useState(true);
-    const [createPostHelperText,setCreatePageHelperText]
-        = React.useState('');
-
     if (isLoading) {
         return (
             <Loading />
@@ -187,6 +181,7 @@ const SavedPosts = () => {
     }
 
     const dateSort = (entry1, entry2) => {
+        console.log('current page', curPage);
         const date1 = new Date( parseInt( 
             entry1.creationTimestamp, 16 ) * 1000 );
         const date2 = new Date( parseInt( 
@@ -201,15 +196,6 @@ const SavedPosts = () => {
         }
 
         return 0;
-    }
-
-    const toggleCreatePost = () => {
-        if (!curPage.userEmails.includes(user.email)){
-            alert("You must be a member to do this!");
-            return;
-        }
-
-        setRenderPostForm(curState => !curState);
     }
 
     const toggleShowPosts = () => {

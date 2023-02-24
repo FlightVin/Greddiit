@@ -13,6 +13,8 @@ import SubGreddiitUsers from './pages/SubgreddiitUsers/SubgreddiitUsers';
 import SubgreddiitPage from './pages/SubgreddiitPage/SubgreddiitPage';
 import SavedPosts from './pages/SavedPosts/SavedPosts';
 import Reported from './pages/Reported/Reported';
+import Stats from './pages/Stats/Stats';
+
 
 function App() {
   return (
@@ -84,6 +86,15 @@ function App() {
           <MySubgreddiitCheck>
             <Dashboard />
             <Reported />
+          </MySubgreddiitCheck>
+        </Protected>
+      } />
+
+      <Route path="/mysubgreddiit/:name/stats" element={
+        <Protected>
+          <MySubgreddiitCheck>
+            <Dashboard />
+            <Stats />
           </MySubgreddiitCheck>
         </Protected>
       } />

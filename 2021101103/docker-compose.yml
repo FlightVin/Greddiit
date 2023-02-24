@@ -1,0 +1,48 @@
+version: "3.7"
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: greddiit-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: greddiit-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  nginx:
+    restart: always
+    image: nginx:latest
+    container_name: greddiit-nginx
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d/ # path on host : path on cotainer
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

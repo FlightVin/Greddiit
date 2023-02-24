@@ -464,7 +464,7 @@ const AllPages = () => {
                         cur_val = dateSort(entry1, entry2);
                     }
 
-                    if (cur_val != 0)
+                    if (cur_val !== 0)
                         break;
                 }
 

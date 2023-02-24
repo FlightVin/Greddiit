@@ -989,7 +989,7 @@ const SubgreddiitPage = () => {
         <div className="subgreddiit-page">
 
             <div className="subgreddiit-info-pane">
-                <img src="https://reactjs.org/logo-og.png" alt="subgreddiit Image"></img>
+                <img src="https://reactjs.org/logo-og.png" alt="subgreddiit"></img>
 
                 <h2 style={{
                     textAlign:'center',
