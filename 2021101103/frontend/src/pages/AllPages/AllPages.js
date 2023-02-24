@@ -17,6 +17,8 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CancelIcon from '@mui/icons-material/Cancel';
 import IconButton from '@mui/material/IconButton';
+import baseURL from "../Base"
+
 
 const AllPages = () => {
     const navigate = useNavigate();
@@ -34,7 +36,7 @@ const AllPages = () => {
     useEffect(() => {
         // getting initial data
         const initRender = async () => {
-            fetch(`http://localhost:5000/access-subgreddiits/`, {
+            fetch(`${baseURL}/access-subgreddiits/`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -206,7 +208,7 @@ const AllPages = () => {
             }
             console.log(name);
 
-            fetch(`http://localhost:5000/block-user-subgreddiit/${name}/${user.email}`, {
+            fetch(`${baseURL}/block-user-subgreddiit/${name}/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -233,7 +235,7 @@ const AllPages = () => {
         return async function(){
             console.log(name);
 
-            fetch(`http://localhost:5000/join-subgreddiit/${name}/${user.email}`, {
+            fetch(`${baseURL}/join-subgreddiit/${name}/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {

@@ -2,6 +2,7 @@ import './SubgreddiitUsers.css'
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useCallback } from 'react';
 import * as React from 'react';
+import baseURL from "../Base"
 
 
 const SubGreddiitUsers = () => {
@@ -44,7 +45,7 @@ const SubGreddiitUsers = () => {
     useEffect(() => {
         // getting initial data
         const initRender = async () => {
-            fetch(`http://localhost:5000/subgreddiit-exists/${name}`, {
+            fetch(`${baseURL}/subgreddiit-exists/${name}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {

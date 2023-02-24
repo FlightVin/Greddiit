@@ -20,6 +20,8 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
 import IconButton from '@mui/material/IconButton';
 import FlagIcon from '@mui/icons-material/Flag';
+import baseURL from "../Base"
+
 
 const SubgreddiitPage = () => {
     const {name} = useParams();
@@ -56,7 +58,7 @@ const SubgreddiitPage = () => {
         setTimeout(() => {
             const initRender = async () => {
                 // getting following array
-                fetch(`http://localhost:5000/access-followers/${user.email}`, {
+                fetch(`${baseURL}/access-followers/${user.email}`, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
@@ -89,7 +91,7 @@ const SubgreddiitPage = () => {
                 });
 
                 // fetcing basic data
-                fetch(`http://localhost:5000/subgreddiit-exists/${name}`, {
+                fetch(`${baseURL}/subgreddiit-exists/${name}`, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
@@ -118,7 +120,7 @@ const SubgreddiitPage = () => {
                                 .forEach(
                                     postID =>{
                                         
-                                        fetch(`http://localhost:5000/access-subgreddiit-post/${postID}`, {
+                                        fetch(`${baseURL}/access-subgreddiit-post/${postID}`, {
                                             method: 'POST',
                                             mode: 'cors',
                                             headers: {
@@ -259,7 +261,7 @@ const SubgreddiitPage = () => {
 
         const JSONData = JSON.stringify(submittedData);
 
-        fetch('http://localhost:5000/create-post', {
+        fetch(`${baseURL}/create-post`, {
             method: 'POST',
             mode: 'cors',
             headers: {
@@ -355,7 +357,7 @@ const SubgreddiitPage = () => {
                 setUpvoteArray(curArray => [...curArray, postID]);
             }
 
-            fetch(`http://localhost:5000/toggle-upvote/${postID}/${user.email}`, {
+            fetch(`${baseURL}/toggle-upvote/${postID}/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -399,7 +401,7 @@ const SubgreddiitPage = () => {
                 setDownvoteArray(curArray => [...curArray, postID]);
             }
 
-            fetch(`http://localhost:5000/toggle-downvote/${postID}/${user.email}`, {
+            fetch(`${baseURL}/toggle-downvote/${postID}/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -443,7 +445,7 @@ const SubgreddiitPage = () => {
                 setSavedByArray(curArray => [...curArray, postID]);
             }
 
-            fetch(`http://localhost:5000/toggle-save/${postID}/${user.email}`, {
+            fetch(`${baseURL}/toggle-save/${postID}/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -488,7 +490,7 @@ const SubgreddiitPage = () => {
                 setFollowingArray(curArray => [...curArray, curEmail]);                
             }
 
-            fetch(`http://localhost:5000/toggle-follower/${user.email}/${curEmail}`, {
+            fetch(`${baseURL}toggle-follower/${user.email}/${curEmail}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -545,7 +547,7 @@ const SubgreddiitPage = () => {
           
                   const JSONData = JSON.stringify(submittedData);
           
-                  fetch('http://localhost:5000/create-report', {
+                  fetch(`${baseURL}/create-report`, {
                       method: 'POST',
                       mode: 'cors',
                       headers: {
@@ -611,7 +613,7 @@ const SubgreddiitPage = () => {
 
                 childrenPostIDs.forEach (postID => {
                     
-                    fetch(`http://localhost:5000/access-post/${postID}`, {
+                    fetch(`${baseURL}/access-post/${postID}`, {
                         method: 'POST',
                         mode: 'cors',
                         headers: {
@@ -675,7 +677,7 @@ const SubgreddiitPage = () => {
           
                   const JSONData = JSON.stringify(submittedData);
           
-                  fetch('http://localhost:5000/create-comment', {
+                  fetch(`${baseURL}/create-comment`, {
                       method: 'POST',
                       mode: 'cors',
                       headers: {

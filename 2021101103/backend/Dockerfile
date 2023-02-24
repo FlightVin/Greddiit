@@ -6,6 +6,6 @@ RUN npm install
 
 COPY --chown=node:node . .
 
-EXPOSE 3000
+EXPOSE 5000
 
 ENTRYPOINT [ "node", "server.js" ]

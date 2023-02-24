@@ -11,6 +11,8 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbDownOffAltIcon from '@mui/icons-material/ThumbDownOffAlt';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PersonAddDisabledIcon from '@mui/icons-material/PersonAddDisabled';
+import baseURL from "../Base"
+
 
 const SavedPosts = () => {
     const user = JSON.parse(localStorage.getItem('grediit-user-details'));
@@ -32,7 +34,7 @@ const SavedPosts = () => {
         // getting initial data
         setTimeout(() => {
             const initRender = async () => {
-                fetch(`http://localhost:5000/access-saved-posts/${user.email}`, {
+                fetch(`${baseURL}/access-saved-posts/${user.email}`, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
@@ -43,7 +45,7 @@ const SavedPosts = () => {
                 .then((result) => {
 
                     // first getting following array
-                    fetch(`http://localhost:5000/access-followers/${user.email}`, {
+                    fetch(`${baseURL}/access-followers/${user.email}`, {
                         method: 'POST',
                         mode: 'cors',
                         headers: {
@@ -93,7 +95,7 @@ const SavedPosts = () => {
                                         entry =>{
                                             const postID = entry._id;
 
-                                            fetch(`http://localhost:5000/access-post/${postID}`, {
+                                            fetch(`${baseURL}/access-post/${postID}`, {
                                                 method: 'POST',
                                                 mode: 'cors',
                                                 headers: {
@@ -213,7 +215,7 @@ const SavedPosts = () => {
                 setUpvoteArray(curArray => [...curArray, postID]);
             }
 
-            fetch(`http://localhost:5000/toggle-upvote/${postID}/${user.email}`, {
+            fetch(`${baseURL}/toggle-upvote/${postID}/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -252,7 +254,7 @@ const SavedPosts = () => {
                 setDownvoteArray(curArray => [...curArray, postID]);
             }
 
-            fetch(`http://localhost:5000/toggle-downvote/${postID}/${user.email}`, {
+            fetch(`${baseURL}/toggle-downvote/${postID}/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -291,7 +293,7 @@ const SavedPosts = () => {
                 setSavedByArray(curArray => [...curArray, postID]);
             }
 
-            fetch(`http://localhost:5000/toggle-save/${postID}/${user.email}`, {
+            fetch(`${baseURL}/toggle-save/${postID}/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -332,7 +334,7 @@ const SavedPosts = () => {
                 setFollowingArray(curArray => [...curArray, curEmail]);                
             }
 
-            fetch(`http://localhost:5000/toggle-follower/${user.email}/${curEmail}`, {
+            fetch(`${baseURL}/toggle-follower/${user.email}/${curEmail}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {

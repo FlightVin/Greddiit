@@ -4,6 +4,7 @@ import { useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import Loading from '../Loading/Loading';
 import Button from '@mui/material/Button';
+import baseURL from "../Base"
 
 const Reported = () => {
     const {name} = useParams();
@@ -52,7 +53,7 @@ const Reported = () => {
     useEffect(() => {
         setTimeout(() => {
             const initRender = async () => {
-                fetch(`http://localhost:5000/access-reports/${name}`, {
+                fetch(`${baseURL}/access-reports/${name}`, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
@@ -62,7 +63,7 @@ const Reported = () => {
                 })
                 .then((result) => {
                     // retrieving basic page details as well
-                    fetch(`http://localhost:5000/subgreddiit-exists/${name}`, {
+                    fetch(`${baseURL}/subgreddiit-exists/${name}`, {
                         method: 'POST',
                         mode: 'cors',
                         headers: {
@@ -96,7 +97,7 @@ const Reported = () => {
 
                                         const curPostID = curArray[i].postID;
 
-                                        fetch(`http://localhost:5000/access-post/${curPostID}`, {
+                                        fetch(`${baseURL}/access-post/${curPostID}`, {
                                             method: 'POST',
                                             mode: 'cors',
                                             headers: {
@@ -175,7 +176,7 @@ const Reported = () => {
                     curArray[i].isIgnored = !curArray[i].isIgnored;
 
                     // making changes to backend
-                    fetch(`http://localhost:5000/toggle-report-ignore/${reportID}`, {
+                    fetch(`${baseURL}/toggle-report-ignore/${reportID}`, {
                         method: 'POST',
                         mode: 'cors',
                         headers: {
@@ -212,7 +213,7 @@ const Reported = () => {
                 setCurPage(currentPage);
 
                 // making changes in backend
-                fetch(`http://localhost:5000/block-user-subgreddiit/${name}/${reportList[i].postBody.posterEmail}`, {
+                fetch(`${baseURL}/block-user-subgreddiit/${name}/${reportList[i].postBody.posterEmail}`, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
@@ -346,37 +347,37 @@ const Reported = () => {
         )
     }
 
-    // delete report
+    // delete post
     const deleteReport = (reportID) => {
         return async function() {
             console.log(`Called delete for ID ${reportID}`);
 
-            var curArray = reportList.filter(ele => {
-                return ele._id !== reportID
-            });
+            // var curArray = reportList.filter(ele => {
+            //     return ele._id !== reportID
+            // });
 
-            // making changes in backend
-            fetch(`http://localhost:5000/delete-report/${reportID}`, {
-                method: 'DELETE',
-                mode: 'cors',
-                headers: {
-                'Content-Type': 'application/json'
-                }, 
-                body: null
-            })
-            .then(result => {
-                const returnedStatus = result.status;
+            // // making changes in backend
+            // fetch(`${baseURL}/delete-report/${reportID}`, {
+            //     method: 'DELETE',
+            //     mode: 'cors',
+            //     headers: {
+            //     'Content-Type': 'application/json'
+            //     }, 
+            //     body: null
+            // })
+            // .then(result => {
+            //     const returnedStatus = result.status;
 
-                if (returnedStatus === 200){
-                    console.log("Deleted report");
-                } else {
-                    console.log("Couldn't delete ignore");
-                    alert("Something went wrong");
-                }
-            })
+            //     if (returnedStatus === 200){
+            //         console.log("Deleted report");
+            //     } else {
+            //         console.log("Couldn't delete ignore");
+            //         alert("Something went wrong");
+            //     }
+            // })
 
-            // making changes in frontend
-            setReportList(curArray);
+            // // making changes in frontend
+            // setReportList(curArray);
         }
     }
 
@@ -440,11 +441,11 @@ const Reported = () => {
                             <div>
                                 {ele.isIgnored ? 
                                     <Button disabled>
-                                        Delete
+                                        Delete Post
                                     </Button>
                                 :
                                     <Button onClick={deleteReport(ele._id)}>
-                                        Delete
+                                        Delete Post
                                     </Button>
                                 }
                             </div>

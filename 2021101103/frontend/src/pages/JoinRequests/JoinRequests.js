@@ -5,6 +5,7 @@ import * as React from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Tooltip } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import baseURL from "../Base"
 
 
 const JoinRequests = () => {
@@ -46,7 +47,7 @@ const JoinRequests = () => {
     useEffect(() => {
         // getting initial data
         const initRender = async () => {
-            fetch(`http://localhost:5000/subgreddiit-exists/${name}`, {
+            fetch(`${baseURL}/subgreddiit-exists/${name}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -78,7 +79,7 @@ const JoinRequests = () => {
 
     const rejectJoin = (joineeEmail) => {
         return async function() {
-            fetch(`http://localhost:5000/reject-user-subgreddiit/${name}/${joineeEmail}`, {
+            fetch(`${baseURL}/reject-user-subgreddiit/${name}/${joineeEmail}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -107,7 +108,7 @@ const JoinRequests = () => {
     const acceptJoin = (joineeEmail) => {
         return async function() {
 
-            fetch(`http://localhost:5000/accept-user-subgreddiit/${name}/${joineeEmail}`, {
+            fetch(`${baseURL}/accept-user-subgreddiit/${name}/${joineeEmail}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {

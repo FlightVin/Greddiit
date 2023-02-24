@@ -1204,7 +1204,24 @@ app.delete('/delete-report/:id', async (req, res) => {
 
   } catch(err){
     console.log(err);
-    return res.status(400).send("Couldn't create follower entry");
+    return res.status(400).send("Couldn't delete report");
+  }
+});
+
+// deleting post
+app.delete('/delete-post/:id', async (req, res) => {
+  try{
+    const id = req.params['id'];
+
+    const returned_data = await Post.findOneAndDelete({
+      _id: id,
+    });
+    
+    return res.status(200).send(returned_data);
+
+  } catch(err){
+    console.log(err);
+    return res.status(400).send("Couldn't delete post");
   }
 });
 

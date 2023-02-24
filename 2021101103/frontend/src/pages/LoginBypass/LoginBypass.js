@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import Loading from "../Loading/Loading";
+import baseURL from "../Base"
 
 const Protected = ({children}) => {
 
@@ -24,7 +25,7 @@ const Protected = ({children}) => {
                 const JSONData = JSON.stringify(tokenObject);
                 console.log(JSONData);
 
-                fetch('http://localhost:5000/auth', {
+                fetch(`${baseURL}/auth`, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {

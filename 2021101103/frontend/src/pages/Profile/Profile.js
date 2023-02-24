@@ -10,6 +10,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Logout from '../../functionality/Logout';
 import DeleteIcon from '@mui/icons-material/Delete';
+import baseURL from "../Base"
 
 const Profile = () => {
 
@@ -29,7 +30,7 @@ const Profile = () => {
     useEffect(() => {
         // getting initial data
         const initRender = async () => {
-            fetch(`http://localhost:5000/access-followers/${user.email}`, {
+            fetch(`${baseURL}/access-followers/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -73,7 +74,7 @@ const Profile = () => {
     const deleteFollower = (followerEmail, followingEmail) => {
         return async function(){
             console.log(followerEmail,followingEmail);
-            fetch(`http://localhost:5000/delete-follower/${followerEmail}/${followingEmail}`, {
+            fetch(`${baseURL}/${followerEmail}/${followingEmail}`, {
                 method: 'DELETE',
                 mode: 'cors',
                 headers: {
@@ -108,7 +109,7 @@ const Profile = () => {
 
         const addFollowerEntryJSON = JSON.stringify(submittedData);
 
-        fetch('http://localhost:5000/add-follower-entry', {
+        fetch(`${baseURL}/add-follower-entry`, {
           method: 'POST',
           mode: 'cors',
           headers: {
@@ -172,7 +173,7 @@ const Profile = () => {
     
         const JSONData = JSON.stringify(submittedData);
     
-        fetch('http://localhost:5000/edit', {
+        fetch(`${baseURL}/edit`, {
           method: 'POST',
           mode: 'cors',
           headers: {
@@ -321,7 +322,7 @@ const Profile = () => {
 
         const followingData = JSON.stringify(submittedData);
 
-        fetch('http://localhost:5000/check-user-existence', {
+        fetch(`${baseURL}/check-user-existence`, {
           method: 'POST',
           mode: 'cors',
           headers: {

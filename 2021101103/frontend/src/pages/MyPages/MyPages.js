@@ -12,6 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useNavigate } from 'react-router-dom';
 import { Tooltip } from '@mui/material';
+import baseURL from "../Base"
 
 const MyPages = () => {
     const navigate = useNavigate();
@@ -31,7 +32,7 @@ const MyPages = () => {
     useEffect(() => {
         // getting initial data
         const initRender = async () => {
-            fetch(`http://localhost:5000/access-subgreddiits/${user.email}`, {
+            fetch(`${baseURL}/access-subgreddiits/${user.email}`, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
@@ -101,7 +102,7 @@ const MyPages = () => {
 
         const JSONData = JSON.stringify(submittedData);
         
-        fetch('http://localhost:5000/create-subgreddiit', {
+        fetch(`${baseURL}/create-subgreddiit`, {
           method: 'POST',
           mode: 'cors',
           headers: {
@@ -137,7 +138,7 @@ const MyPages = () => {
         return async function(){
             console.log(name);
 
-            fetch(`http://localhost:5000/delete-subgreddiit/${name}`, {
+            fetch(`${baseURL}/delete-subgreddiit/${name}`, {
                 method: 'DELETE',
                 mode: 'cors',
                 headers: {

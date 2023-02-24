@@ -1,6 +1,8 @@
 import { Navigate, useParams } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import Loading from "../Loading/Loading";
+import baseURL from "../Base"
+
 
 const MySubgreddiitCheck = ({children}) => {
     const { name } = useParams();
@@ -27,7 +29,7 @@ const MySubgreddiitCheck = ({children}) => {
                 const JSONData = JSON.stringify(tokenObject);
                 console.log(JSONData);
                 
-                fetch(`http://localhost:5000/subgreddiit-auth/${name}/${user.email}`, {
+                fetch(`${baseURL}/subgreddiit-auth/${name}/${user.email}`, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
@@ -96,7 +98,7 @@ const SubgreddiitCheck = ({children}) => {
                 const JSONData = JSON.stringify(tokenObject);
                 console.log(JSONData);
 
-                fetch(`http://localhost:5000/subgreddiit-exists/${name}`, {
+                fetch(`${baseURL}/subgreddiit-exists/${name}`, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {

@@ -11,6 +11,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import './Login.css'
 import { useNavigate } from 'react-router-dom';
+import baseURL from "../Base"
 
 const theme = createTheme();
 
@@ -41,7 +42,7 @@ export default function Login() {
 
     console.log(JSONData);
 
-    fetch('http://localhost:5000/login', {
+    fetch(`${baseURL}/login`, {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -113,7 +114,7 @@ export default function Login() {
 
     const JSONData = JSON.stringify(submittedData);
 
-    fetch('http://localhost:5000/register', {
+    fetch(`${baseURL}/register`, {
       method: 'POST',
       mode: 'cors',
       headers: {
