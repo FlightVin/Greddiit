@@ -8,7 +8,7 @@
 
 ### Run docker services
 
-`$ sudo docker-compose run`
+`$ sudo docker-compose up`
 
 Access on web browser via `localhost:8000`
 
