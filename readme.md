@@ -1,187 +1,121 @@
 # Greddiit
 
-## Running
+Greddiit is a Dockerized web portal inspired by Reddit, designed to provide a full-fledged social media experience. It allows users to register, create and manage posts, and moderate communities (Sub Greddiits). Built with the MERN stack (MongoDB, Express.js, React.js, Node.js), Greddiit ensures a scalable, secure, and responsive platform with Docker and Nginx for efficient content delivery and deployment.
 
-### Build docker services
+## Key Features
 
-`$ sudo docker-compose build`
+- **User Authentication**: Secure login and registration with hashed passwords and token-based authentication.
+- **Post and Comment System**: Create, view, upvote, and manage posts with multi-level commenting.
+- **Community Moderation**: Moderators can manage Sub Greddiits, handle reports, and moderate users and content.
+- **Advanced Search and Filtering**: Fuzzy search, filters, and nested sorting for an optimized browsing experience.
+- **Dockerized Deployment**: Scalable and efficient deployment using Docker and Nginx.
 
-### Run docker services
+## Getting Started
 
-`$ sudo docker-compose up`
+### Prerequisites
 
-Access on web browser via `localhost:8000`
+- Docker and Docker Compose installed on your system.
+
+### Installation and Running
+
+1. **Build Docker Services**:
+    ```bash
+    $ sudo docker-compose build
+    ```
+
+2. **Run Docker Services**:
+    ```bash
+    $ sudo docker-compose up
+    ```
+    Access the application in your web browser via `localhost:8000`.
 
 ---
 
 ## Directory Structure
 
-```
+```bash
 .
 ├── backend
-│   ├── database
-│   │   └── mongo.js
-│   ├── Dockerfile
-│   ├── models
-│   │   ├── Follower.js
-│   │   ├── Post.js
-│   │   ├── Report.js
-│   │   ├── Subgreddiit.js
-│   │   └── User.js
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── secret
-│   │   └── token.js
-│   └── server.js
+│   ├── database
+│   │   └── mongo.js
+│   ├── Dockerfile
+│   ├── models
+│   │   ├── Follower.js
+│   │   ├── Post.js
+│   │   ├── Report.js
+│   │   ├── Subgreddiit.js
+│   │   └── User.js
+│   ├── package.json
+│   ├── secret
+│   │   └── token.js
+│   └── server.js
 ├── docker-compose.yml
 ├── frontend
-│   ├── Dockerfile
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── public
-│   │   ├── favicon.ico
-│   │   ├── grediit-logo.ico
-│   │   ├── grediit-logo.png
-│   │   ├── index.html
-│   │   ├── login-background.webp
-│   │   ├── logo192.png
-│   │   ├── logo512.png
-│   │   ├── manifest.json
-│   │   ├── profile-photo.png
-│   │   └── robots.txt
-│   ├── README.md
-│   └── src
-│       ├── App.js
-│       ├── functionality
-│       │   └── Logout.js
-│       ├── index.css
-│       ├── index.js
-│       └── pages
-│           ├── 404
-│           │   └── 404.js
-│           ├── AllPages
-│           │   ├── AllPages.css
-│           │   └── AllPages.js
-│           ├── Base.js
-│           ├── Dashboard
-│           │   ├── Dashboard.css
-│           │   └── Dashboard.js
-│           ├── JoinRequests
-│           │   ├── JoinRequests.css
-│           │   └── JoinRequests.js
-│           ├── Loading
-│           │   └── Loading.js
-│           ├── Login
-│           │   ├── Login.css
-│           │   └── Login.js
-│           ├── LoginBypass
-│           │   └── LoginBypass.js
-│           ├── MyPages
-│           │   ├── MyPages.css
-│           │   └── MyPages.js
-│           ├── Profile
-│           │   ├── Profile.css
-│           │   └── Profile.js
-│           ├── Protected
-│           │   └── Protected.js
-│           ├── Reported
-│           │   ├── Reported.css
-│           │   └── Reported.js
-│           ├── SavedPosts
-│           │   ├── SavedPosts.css
-│           │   └── SavedPosts.js
-│           ├── Stats
-│           │   ├── Stats.css
-│           │   └── Stats.js
-│           ├── SubgreddiitCheck
-│           │   └── SubgreddiitCheck.js
-│           ├── SubgreddiitPage
-│           │   ├── SubgreddiitPage.css
-│           │   └── SubgreddiitPage.js
-│           └── SubgreddiitUsers
-│               ├── SubgreddiitUsers.css
-│               └── SubgreddiitUsers.js
-├── nginx
-│   └── default.conf
-└── readme.md
-
-26 directories, 60 files
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── public
+│   │   ├── favicon.ico
+│   │   ├── grediit-logo.ico
+│   │   ├── grediit-logo.png
+│   │   ├── index.html
+│   │   ├── login-background.webp
+│   │   └── robots.txt
+│   └── src
+│       ├── App.js
+│       ├── functionality
+│       │   └── Logout.js
+│       ├── index.css
+│       └── pages
+│           ├── 404
+│           ├── AllPages
+│           ├── Base.js
+│           ├── Dashboard
+│           ├── JoinRequests
+│           ├── Loading
+│           ├── Login
+│           ├── MyPages
+│           ├── Profile
+│           ├── Protected.js
+│           ├── Reported.js
+│           ├── SavedPosts.js
+│           ├── Stats
+│           ├── SubgreddiitCheck.js
+│           ├── SubgreddiitPage.js
+│           └── SubgreddiitUsers.js
+└── nginx
+    └── default.conf
 ```
 
----
+## Detailed Features
 
-## Login and Registration
+### User Management
 
-Hosted on /login using react component `<Login />`
+- **Login & Registration**: Users can register and log in with unique email-based identification. Passwords are securely hashed, and sessions are persistent even after browser restarts.
+- **Profile Management**: Users can view and edit their profiles, including managing followers and following lists.
 
-This page contains login and registration functionality using MUI templates.
+### Sub Greddiits (Communities)
 
-Email is taken to be unique. Input validation has been implemented in both backend and frontend.
+- **My Sub Greddiits**: Users can create and manage their Sub Greddiits, view community stats, and moderate content.
+- **Moderation Tools**: Manage user reports, handle join requests, and monitor community growth and activity through detailed stats.
 
-## Navbar
+### Posts & Comments
 
-The navbar contains MUI icons to all specified links. In the `My Subgreddiits` page, the navbar also includes icons to the links to `join requests`, etc.
+- **Create and Manage Posts**: Users can create posts within Sub Greddiits, upvote or downvote posts, and engage in multi-level commenting.
+- **Report Management**: Moderators can address reports by ignoring, deleting posts, or banning users. Reports are automatically removed after 10 days.
 
-## Profile Page
+### Advanced Functionality
 
-Includes a form to allow editing the user details. Drop down lists of followers and following is also present.
+- **Search & Filtering**: Enhanced search functionality with fuzzy search, filters by tags, and nested sorting based on multiple criteria.
+- **Saved Posts**: Users can save and manage their favorite posts across Sub Greddiits.
+- **Banned Keywords**: Posts containing banned words are flagged, and inappropriate content is automatically replaced with asterisks.
 
-## My Subgreddiits Page
+### Miscellaneous
 
-There is a form to create a new subgreddiit. The list of already created subgreddit is also present with all the required details such as number of people, number of posts, name, description and comma-separated list of banned keywords.
+- **Input Validation**: Extensive validation on both frontend and backend, ensuring secure and accurate data handling.
+- **Protected Routes**: API routes are protected, preventing unauthorized access.
+- **Shortcuts**: Implemented keyboard shortcuts for quick navigation within the platform.
 
-We can delete and open subgreddits.
+## Deployment
 
-## Subgreddit Page (Moderator View)
+Greddiit is fully containerized using Docker, with separate containers for the backend, frontend, and Nginx, ensuring a seamless deployment process. The services are orchestrated via `docker-compose` to maintain a scalable and efficient infrastructure.
 
-We have separate pages for showing existing users (along with banned users), join requests and reports.
-
-### Reports
-
-A report can be
-
-    1. Ignored in which case all other buttons are disabled
-
-    2. The post's poster can be banned from the subgreddiit
-
-    3. The post can be deleted in which case all reports for the post are also deleted.
-
-Reports are deleted after 10 days.
-
-## Sub Greddiits Page
-
-We can search, fuzzy search, filter, and sort. Nested sort in which order of selection matters has also been implemented.
-
-The subgreddiits are show below the search pane in which we can open a page, leave a page or join a page.
-
-## Subgreddiit Page (User View)
-
-The left part contains the subgreddiit's information and image. We can add posts (if we are users of the subgreddiit), upvote posts, downvote posts, follow users, save posts and report posts.
-
-Nested comments have been implemented.
-
-## Saved Posts
-
-We can see all the saved posts and also unsave posts.
-
-## Banned keywords
-
-If a post contains some banned words (case insensitive), we alert the user and the text is replaced by asterisks.
-
-## Misc
-
-Input validaton has been done.
-
-We don't allow users to access API calls through protected routes.
-
-Buttons are disabled during API calls.
-
-## Bonuses
-
-Multi-level comments have been implemented
-
-Shotcuts have been implemented (Alt + u, Alt + j, Alt + s, Alt + r)
-
-## Dockerization
-
-We run in docker using `docker-compose`. Containers include `subgreddiit-nginx`, `subgreddiit-backend` and `subgreddiit-frontend`.
